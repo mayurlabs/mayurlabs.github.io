@@ -1,0 +1,2455 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Agent MV — PM Operating System</title>
+<style>
+:root {
+  --sf-blue: #0176d3;
+  --sf-blue-dark: #014486;
+  --sf-navy: #032d60;
+  --sf-purple: #9050e9;
+  --sf-green: #2e844a;
+  --sf-orange: #fe9339;
+  --sf-red: #ea001e;
+  --sf-teal: #0b827c;
+  --bg: #f4f6f9;
+  --card: #ffffff;
+  --text: #181818;
+  --text-muted: #706e6b;
+  --border: #e5e5e5;
+  --glow: rgba(1, 118, 211, 0.3);
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: 'Salesforce Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  overflow-x: hidden;
+}
+
+/* ─── HERO SECTION ─── */
+.hero {
+  background: linear-gradient(135deg, var(--sf-navy) 0%, var(--sf-blue-dark) 50%, var(--sf-purple) 100%);
+  color: white;
+  padding: 40px 24px 60px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.hero::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle at 30% 50%, rgba(144, 80, 233, 0.15) 0%, transparent 50%),
+              radial-gradient(circle at 70% 80%, rgba(1, 118, 211, 0.1) 0%, transparent 40%);
+  animation: heroShift 20s ease-in-out infinite;
+}
+
+@keyframes heroShift {
+  0%, 100% { transform: translate(0, 0); }
+  50% { transform: translate(-5%, 3%); }
+}
+
+.hero h1 {
+  font-size: clamp(2rem, 5vw, 3.5rem);
+  font-weight: 700;
+  position: relative;
+  letter-spacing: -0.5px;
+}
+
+.hero h1 span { color: var(--sf-orange); }
+
+.hero-subtitle {
+  font-size: clamp(1rem, 2.5vw, 1.3rem);
+  opacity: 0.85;
+  margin-top: 12px;
+  position: relative;
+}
+
+.hero-stats {
+  display: flex;
+  justify-content: center;
+  gap: 40px;
+  margin-top: 32px;
+  position: relative;
+  flex-wrap: wrap;
+}
+
+.hero-stat {
+  text-align: center;
+}
+
+.hero-stat .number {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: var(--sf-orange);
+  display: block;
+}
+
+.hero-stat .label {
+  font-size: 0.85rem;
+  opacity: 0.7;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+/* ─── NAV TABS ─── */
+.nav {
+  display: flex;
+  justify-content: center;
+  gap: 4px;
+  padding: 16px 24px;
+  background: white;
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  flex-wrap: wrap;
+}
+
+.nav-btn {
+  padding: 10px 20px;
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  border-radius: 20px;
+  transition: all 0.2s;
+}
+
+.nav-btn:hover { background: #f0f0f0; color: var(--text); }
+.nav-btn.active { background: var(--sf-blue); color: white; }
+
+/* ─── SECTIONS ─── */
+.section {
+  display: none;
+  padding: 32px 24px;
+  max-width: 1400px;
+  margin: 0 auto;
+  animation: fadeIn 0.3s ease;
+}
+
+.section.active { display: block; }
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.section-title {
+  font-size: 1.6rem;
+  font-weight: 700;
+  margin-bottom: 8px;
+  color: var(--sf-navy);
+}
+
+.section-desc {
+  color: var(--text-muted);
+  margin-bottom: 32px;
+  font-size: 1rem;
+}
+
+/* ─── ARCHITECTURE DIAGRAM ─── */
+.arch-canvas {
+  position: relative;
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  min-height: 950px;
+}
+
+.agent-node {
+  position: absolute;
+  width: 140px;
+  text-align: center;
+  cursor: pointer;
+  transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.agent-node:hover { transform: scale(1.08); }
+
+.agent-icon {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 8px;
+  font-size: 1.5rem;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  border: 3px solid white;
+  transition: box-shadow 0.3s;
+}
+
+.agent-node:hover .agent-icon {
+  box-shadow: 0 4px 20px var(--glow);
+}
+
+.agent-name {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--sf-navy);
+  line-height: 1.3;
+}
+
+.agent-level {
+  font-size: 0.65rem;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+/* SVG connections */
+.connections-svg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.connection-line {
+  stroke: var(--border);
+  stroke-width: 2;
+  fill: none;
+  stroke-dasharray: 8 4;
+}
+
+.connection-line.active {
+  stroke: var(--sf-blue);
+  stroke-width: 2.5;
+  animation: dashFlow 1.5s linear infinite;
+}
+
+@keyframes dashFlow {
+  to { stroke-dashoffset: -24; }
+}
+
+.data-particle {
+  fill: var(--sf-orange);
+  opacity: 0;
+}
+
+.data-particle.active {
+  animation: particleMove 2s ease-in-out infinite;
+}
+
+@keyframes particleMove {
+  0% { opacity: 0; }
+  10% { opacity: 1; }
+  90% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+/* ─── TIMELINE ─── */
+.timeline-container {
+  position: relative;
+  padding: 40px 0;
+}
+
+.timeline-track {
+  display: flex;
+  align-items: stretch;
+  position: relative;
+  min-height: 500px;
+}
+
+.timeline-line {
+  width: 4px;
+  background: linear-gradient(to bottom, var(--sf-blue), var(--sf-purple));
+  margin-left: 80px;
+  border-radius: 2px;
+  position: relative;
+}
+
+.timeline-events {
+  flex: 1;
+  padding-left: 40px;
+}
+
+.timeline-event {
+  position: relative;
+  margin-bottom: 32px;
+  padding: 20px 24px;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  border-left: 4px solid var(--sf-blue);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.timeline-event:hover {
+  transform: translateX(4px);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+}
+
+.timeline-event .time {
+  position: absolute;
+  left: -145px;
+  top: 20px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--sf-blue);
+  width: 80px;
+  text-align: right;
+}
+
+.timeline-event .dot {
+  position: absolute;
+  left: -50px;
+  top: 24px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--sf-blue);
+  border: 3px solid white;
+  box-shadow: 0 0 0 3px var(--sf-blue);
+}
+
+.timeline-event h3 {
+  font-size: 1rem;
+  margin-bottom: 6px;
+  color: var(--sf-navy);
+}
+
+.timeline-event p {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+
+.timeline-event .agents-involved {
+  display: flex;
+  gap: 6px;
+  margin-top: 10px;
+  flex-wrap: wrap;
+}
+
+.agent-badge {
+  font-size: 0.7rem;
+  padding: 3px 8px;
+  border-radius: 10px;
+  background: #eef4ff;
+  color: var(--sf-blue);
+  font-weight: 500;
+}
+
+/* ─── FLOW DIAGRAM ─── */
+.flow-container {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 24px;
+}
+
+.flow-phase {
+  background: white;
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+}
+
+.flow-phase-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.flow-phase-num {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--sf-blue);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 1rem;
+}
+
+.flow-phase h3 {
+  font-size: 1.1rem;
+  color: var(--sf-navy);
+}
+
+.flow-agents {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 12px;
+}
+
+.flow-agent-card {
+  padding: 14px 16px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  transition: all 0.2s;
+  position: relative;
+  overflow: hidden;
+}
+
+.flow-agent-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 4px;
+  height: 100%;
+}
+
+.flow-agent-card:hover {
+  border-color: var(--sf-blue);
+  box-shadow: 0 2px 12px rgba(1, 118, 211, 0.1);
+}
+
+.flow-agent-card h4 {
+  font-size: 0.85rem;
+  color: var(--sf-navy);
+  margin-bottom: 4px;
+}
+
+.flow-agent-card p {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  line-height: 1.4;
+}
+
+.flow-arrow {
+  display: flex;
+  justify-content: center;
+  padding: 8px 0;
+  color: var(--sf-blue);
+  font-size: 1.5rem;
+  animation: pulseDown 1.5s ease-in-out infinite;
+}
+
+@keyframes pulseDown {
+  0%, 100% { opacity: 0.4; transform: translateY(0); }
+  50% { opacity: 1; transform: translateY(4px); }
+}
+
+/* ─── CAPABILITIES GRID ─── */
+.cap-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
+}
+
+.cap-card {
+  background: white;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+  border: 1px solid var(--border);
+  transition: all 0.2s;
+}
+
+.cap-card:hover {
+  border-color: var(--sf-blue);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+}
+
+.cap-card-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.cap-emoji {
+  font-size: 1.3rem;
+}
+
+.cap-card h4 {
+  font-size: 0.9rem;
+  color: var(--sf-navy);
+}
+
+.cap-card p {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+
+.cap-tag {
+  display: inline-block;
+  font-size: 0.65rem;
+  padding: 2px 8px;
+  border-radius: 8px;
+  margin-top: 8px;
+  font-weight: 500;
+}
+
+.cap-tag.sweep { background: #e8f5e9; color: var(--sf-green); }
+.cap-tag.ondemand { background: #fff3e0; color: #e65100; }
+.cap-tag.weekly { background: #e8eaf6; color: #283593; }
+.cap-tag.chain { background: #fce4ec; color: #c62828; }
+.cap-tag.background { background: #e0f2f1; color: #00695c; }
+
+/* ─── TRUST LADDER ─── */
+.trust-ladder {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.trust-level {
+  padding: 24px 32px;
+  border-left: 4px solid;
+  position: relative;
+  background: white;
+  margin-bottom: 2px;
+}
+
+.trust-level.current {
+  border-left-color: var(--sf-green);
+  background: #f0fdf4;
+}
+
+.trust-level.next {
+  border-left-color: var(--sf-orange);
+  background: #fffbf0;
+}
+
+.trust-level.future {
+  border-left-color: var(--text-muted);
+  background: #fafafa;
+  opacity: 0.7;
+}
+
+.trust-level h3 {
+  font-size: 1.1rem;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.trust-level p {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  margin-top: 6px;
+  line-height: 1.5;
+}
+
+.trust-badge {
+  font-size: 0.7rem;
+  padding: 2px 10px;
+  border-radius: 10px;
+  font-weight: 600;
+}
+
+.trust-badge.active { background: #dcfce7; color: var(--sf-green); }
+.trust-badge.pending { background: #fef3c7; color: #92400e; }
+.trust-badge.locked { background: #f3f4f6; color: #6b7280; }
+
+/* ─── VALUE SECTION ─── */
+.value-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 24px;
+}
+
+.value-card {
+  background: white;
+  border-radius: 16px;
+  padding: 28px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  text-align: center;
+}
+
+.value-icon {
+  font-size: 2.5rem;
+  margin-bottom: 12px;
+}
+
+.value-card h3 {
+  font-size: 1.1rem;
+  color: var(--sf-navy);
+  margin-bottom: 8px;
+}
+
+.value-card p {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  line-height: 1.6;
+}
+
+.value-metric {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--sf-blue);
+  margin: 12px 0 4px;
+}
+
+.value-metric-label {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* ─── LIVE SIMULATION ─── */
+.sim-container {
+  background: var(--sf-navy);
+  border-radius: 16px;
+  padding: 32px;
+  color: white;
+  position: relative;
+  overflow: hidden;
+  min-height: 400px;
+}
+
+.sim-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.sim-header h3 {
+  font-size: 1.2rem;
+}
+
+.sim-controls {
+  display: flex;
+  gap: 8px;
+}
+
+.sim-btn {
+  padding: 8px 16px;
+  border: 1px solid rgba(255,255,255,0.3);
+  background: transparent;
+  color: white;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.8rem;
+  transition: all 0.2s;
+}
+
+.sim-btn:hover { background: rgba(255,255,255,0.1); }
+.sim-btn.active { background: var(--sf-blue); border-color: var(--sf-blue); }
+
+.sim-log {
+  font-family: 'SF Mono', 'Fira Code', monospace;
+  font-size: 0.8rem;
+  line-height: 1.8;
+  max-height: 320px;
+  overflow-y: auto;
+  padding-right: 16px;
+}
+
+.sim-log::-webkit-scrollbar { width: 6px; }
+.sim-log::-webkit-scrollbar-track { background: rgba(255,255,255,0.05); }
+.sim-log::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 3px; }
+
+.log-line {
+  opacity: 0;
+  animation: logAppear 0.3s forwards;
+  padding: 4px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+
+@keyframes logAppear {
+  from { opacity: 0; transform: translateX(-10px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+.log-time { color: rgba(255,255,255,0.4); }
+.log-agent { color: var(--sf-orange); font-weight: 600; }
+.log-action { color: #a5d6ff; }
+.log-result { color: #7ee787; }
+.log-arrow { color: rgba(255,255,255,0.3); }
+
+/* ─── RESPONSIVE ─── */
+@media (max-width: 768px) {
+  .hero-stats { gap: 20px; }
+  .hero-stat .number { font-size: 1.8rem; }
+  .nav { gap: 2px; padding: 12px 8px; }
+  .nav-btn { padding: 8px 12px; font-size: 0.8rem; }
+  .section { padding: 24px 16px; }
+  .timeline-line { margin-left: 40px; }
+  .timeline-event .time { left: -85px; width: 50px; font-size: 0.75rem; }
+  .timeline-event .dot { left: -30px; }
+  .arch-canvas { min-height: 1200px; }
+  .agent-node { width: 100px; }
+  .agent-icon { width: 48px; height: 48px; font-size: 1.2rem; }
+  .agent-name { font-size: 0.65rem; }
+}
+
+/* ─── ORG CHART ─── */
+.org-tree {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0;
+  padding: 20px 0;
+}
+
+.org-level {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  position: relative;
+}
+
+.org-connector-v {
+  width: 3px;
+  height: 28px;
+  background: linear-gradient(to bottom, var(--sf-blue), var(--sf-purple));
+  border-radius: 2px;
+}
+
+.org-connector-h {
+  height: 3px;
+  background: var(--border);
+  border-radius: 2px;
+  margin: 0 auto;
+}
+
+.org-person {
+  background: white;
+  border-radius: 14px;
+  padding: 16px 24px;
+  text-align: center;
+  box-shadow: 0 3px 12px rgba(0,0,0,0.08);
+  border: 2px solid var(--border);
+  transition: all 0.3s;
+  max-width: 220px;
+  position: relative;
+}
+
+.org-person:hover {
+  border-color: var(--sf-blue);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(1, 118, 211, 0.15);
+}
+
+.org-person.ceo {
+  border-color: var(--sf-orange);
+  background: linear-gradient(135deg, #fffbf0 0%, #fff5e0 100%);
+  padding: 20px 32px;
+  max-width: 260px;
+}
+
+.org-person.coo {
+  border-color: var(--sf-navy);
+  background: linear-gradient(135deg, #f0f4ff 0%, #e8eeff 100%);
+}
+
+.org-person .org-emoji {
+  font-size: 1.8rem;
+  margin-bottom: 6px;
+}
+
+.org-person .org-title {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--sf-navy);
+}
+
+.org-person .org-role {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  margin-top: 3px;
+  line-height: 1.3;
+}
+
+.org-person .org-badge-level {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  font-size: 0.6rem;
+  padding: 2px 8px;
+  border-radius: 8px;
+  font-weight: 700;
+  background: var(--sf-navy);
+  color: white;
+}
+
+.org-division-row {
+  display: flex;
+  justify-content: center;
+  gap: 24px;
+  flex-wrap: wrap;
+  padding: 0 16px;
+}
+
+.org-division {
+  background: white;
+  border-radius: 16px;
+  padding: 20px;
+  min-width: 280px;
+  max-width: 380px;
+  flex: 1;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  border-top: 4px solid var(--sf-blue);
+}
+
+.org-division h4 {
+  font-size: 0.95rem;
+  color: var(--sf-navy);
+  margin-bottom: 4px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.org-division .div-subtitle {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  margin-bottom: 12px;
+}
+
+.org-division .div-members {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.org-member {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  background: #f8f9fa;
+  transition: background 0.2s;
+}
+
+.org-member:hover { background: #eef4ff; }
+
+.org-member .mem-emoji {
+  font-size: 1.1rem;
+  width: 28px;
+  text-align: center;
+}
+
+.org-member .mem-info {
+  flex: 1;
+}
+
+.org-member .mem-name {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--sf-navy);
+}
+
+.org-member .mem-role {
+  font-size: 0.68rem;
+  color: var(--text-muted);
+}
+
+.org-member .mem-level {
+  font-size: 0.6rem;
+  padding: 2px 6px;
+  border-radius: 6px;
+  background: #e8f5e9;
+  color: var(--sf-green);
+  font-weight: 600;
+}
+
+.org-shared-services {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-top: 8px;
+  padding: 0 16px;
+}
+
+.org-shared-card {
+  background: white;
+  border-radius: 10px;
+  padding: 14px 18px;
+  text-align: center;
+  border: 1px dashed var(--border);
+  min-width: 140px;
+  transition: all 0.2s;
+}
+
+.org-shared-card:hover {
+  border-color: var(--sf-purple);
+  border-style: solid;
+}
+
+.org-shared-card .ss-emoji { font-size: 1.3rem; }
+.org-shared-card .ss-name { font-size: 0.75rem; font-weight: 600; color: var(--sf-navy); margin-top: 4px; }
+.org-shared-card .ss-desc { font-size: 0.65rem; color: var(--text-muted); margin-top: 2px; }
+
+.org-governance {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+  margin-top: 32px;
+}
+
+.org-gov-card {
+  background: white;
+  border-radius: 12px;
+  padding: 20px;
+  border-left: 4px solid var(--sf-purple);
+  box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+}
+
+.org-gov-card h4 {
+  font-size: 0.85rem;
+  color: var(--sf-navy);
+  margin-bottom: 6px;
+}
+
+.org-gov-card p {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+
+.org-analogy-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 24px;
+  font-size: 0.82rem;
+}
+
+.org-analogy-table th {
+  background: var(--sf-navy);
+  color: white;
+  padding: 10px 14px;
+  text-align: left;
+  font-weight: 600;
+}
+
+.org-analogy-table td {
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--border);
+  color: var(--text);
+}
+
+.org-analogy-table tr:nth-child(even) td { background: #f8f9fa; }
+.org-analogy-table tr:hover td { background: #eef4ff; }
+
+/* ─── FOOTER ─── */
+.footer {
+  text-align: center;
+  padding: 32px 24px;
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  border-top: 1px solid var(--border);
+  margin-top: 48px;
+}
+
+.footer strong { color: var(--sf-navy); }
+</style>
+</head>
+<body>
+
+<!-- HERO -->
+<div class="hero">
+  <h1>Agent <span>MV</span></h1>
+  <p class="hero-subtitle">PM² Framework — A PM Operating System with 22 AI Agents + Multi-Agent Workflow Orchestration</p>
+  <div class="hero-stats">
+    <div class="hero-stat">
+      <span class="number">22</span>
+      <span class="label">Specialist Agents</span>
+    </div>
+    <div class="hero-stat">
+      <span class="number">65</span>
+      <span class="label">Active Capabilities</span>
+    </div>
+    <div class="hero-stat">
+      <span class="number">8</span>
+      <span class="label">Workflow Scripts</span>
+    </div>
+    <div class="hero-stat">
+      <span class="number">9</span>
+      <span class="label">Orchestration Chains</span>
+    </div>
+    <div class="hero-stat">
+      <span class="number">48%</span>
+      <span class="label">Progress to God Mode</span>
+    </div>
+  </div>
+  <p style="margin-top:20px; font-size:0.95rem; opacity:0.9; position:relative;">
+    Proven: <strong>78% admin time reduction</strong> on first epic ·
+    <a href="https://git.soma.salesforce.com/pages/mayuresh-verma/pm-work/.agents/artifacts/3x-initiative/agent-mv-time-savings-dashboard.html" style="color:var(--sf-orange); text-decoration:underline;" target="_blank">see impact dashboard →</a>
+  </p>
+  <!-- Upgrade Banner -->
+  <div style="margin-top:24px; background:rgba(255,255,255,0.12); border:1px solid rgba(255,255,255,0.25); border-radius:12px; padding:14px 24px; display:inline-flex; align-items:center; gap:12px; position:relative; backdrop-filter:blur(4px);">
+    <span style="font-size:1.3rem;">🚀</span>
+    <div style="text-align:left;">
+      <div style="font-size:0.8rem; font-weight:700; color:var(--sf-orange); text-transform:uppercase; letter-spacing:1px;">Phase 3 Upgrade — May 2026</div>
+      <div style="font-size:0.78rem; opacity:0.85; margin-top:2px;">+Legal Counsel · +Innovation Lab · Jarvis Protocol (3-Tier Memory · 47KB institutional awareness) · 10 chains · 64 capabilities</div>
+    </div>
+  </div>
+</div>
+
+<!-- NAVIGATION -->
+<div class="nav">
+  <button class="nav-btn" onclick="showSection('orgchart')">Org Chart</button>
+  <button class="nav-btn active" onclick="showSection('architecture')">Architecture</button>
+  <button class="nav-btn" onclick="showSection('flow')">Sweep Flow</button>
+  <button class="nav-btn" onclick="showSection('timeline')">Daily Rhythm</button>
+  <button class="nav-btn" onclick="showSection('capabilities')">Capabilities</button>
+  <button class="nav-btn" onclick="showSection('trust')">Trust Ladder</button>
+  <button class="nav-btn" onclick="showSection('workflows')" style="border-color:var(--sf-purple); color:var(--sf-purple);">⚡ Workflows</button>
+  <button class="nav-btn" onclick="showSection('simulation')">Live Simulation</button>
+  <button class="nav-btn" onclick="showSection('value')">Value Delivered</button>
+  <button class="nav-btn" onclick="showSection('evolution')" style="border-color:var(--sf-orange); color:var(--sf-orange);">Evolution</button>
+</div>
+
+<!-- SECTION: ORG CHART -->
+<div class="section" id="section-orgchart">
+  <h2 class="section-title">The Agent Organization</h2>
+  <p class="section-desc">Agent MV is structured like a company — with a CEO, COO, four operating divisions (including a self-strengthening layer), shared services, and governance mechanisms. Progressive autonomy means agents can be "promoted" based on performance data.</p>
+
+  <div class="org-tree">
+
+    <!-- CEO -->
+    <div class="org-level">
+      <div class="org-person ceo">
+        <div class="org-emoji">👨‍💼</div>
+        <div class="org-title">Mayuresh Verma</div>
+        <div class="org-role">CEO — Reviews, approves, sends<br>Sets strategy (V2MOM) · Promotes agents · Kill switch</div>
+      </div>
+    </div>
+
+    <div class="org-connector-v"></div>
+
+    <!-- COO -->
+    <div class="org-level">
+      <div class="org-person coo">
+        <span class="org-badge-level">L0</span>
+        <div class="org-emoji">🎭</div>
+        <div class="org-title">Lead Orchestrator</div>
+        <div class="org-role">COO / Chief of Staff<br>Reads registry · Dispatches · Manages 10 chains · CWD-preflight · Jarvis Protocol enforcement</div>
+      </div>
+    </div>
+
+    <div class="org-connector-v"></div>
+
+    <!-- Divisions -->
+    <div class="org-level" style="width:100%;">
+      <div style="text-align:center; margin-bottom:16px;">
+        <span style="font-size:0.75rem; text-transform:uppercase; letter-spacing:1.5px; color:var(--text-muted); font-weight:600;">Three Core Operating Divisions</span>
+      </div>
+      <div class="org-division-row">
+
+        <!-- Communication Division -->
+        <div class="org-division" style="border-top-color: var(--sf-blue);">
+          <h4>📡 Communication Division</h4>
+          <div class="div-subtitle">Daily operations — inbound signal processing</div>
+          <div class="div-members">
+            <div class="org-member">
+              <span class="mem-emoji">🔍</span>
+              <div class="mem-info"><div class="mem-name">Slack Triage</div><div class="mem-role">15+ channels · priority signals · draft responses</div></div>
+              <span class="mem-level">L1</span>
+            </div>
+            <div class="org-member">
+              <span class="mem-emoji">🤝</span>
+              <div class="mem-info"><div class="mem-name">Customer Response</div><div class="mem-role">Customer channels · GTA150 (139 accounts) · CSM routing</div></div>
+              <span class="mem-level">L1</span>
+            </div>
+            <div class="org-member">
+              <span class="mem-emoji">📧</span>
+              <div class="mem-info"><div class="mem-name">Gmail Responder</div><div class="mem-role">Internal email classification + draft replies</div></div>
+              <span class="mem-level">L1</span>
+            </div>
+            <div class="org-member">
+              <span class="mem-emoji">📋</span>
+              <div class="mem-info"><div class="mem-name">Workspace Digest</div><div class="mem-role">Docs · Drive · Calendar · Gemini transcripts · @mentions</div></div>
+              <span class="mem-level">L1</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Intelligence Division -->
+        <div class="org-division" style="border-top-color: var(--sf-green);">
+          <h4>🧠 Intelligence Division</h4>
+          <div class="div-subtitle">Analysis, strategy, decision support</div>
+          <div class="div-members">
+            <div class="org-member">
+              <span class="mem-emoji">📅</span>
+              <div class="mem-info"><div class="mem-name">Meeting Ops</div><div class="mem-role">Pre-briefs · action items · V2MOM trace · conflict resolution</div></div>
+              <span class="mem-level">L1</span>
+            </div>
+            <div class="org-member">
+              <span class="mem-emoji">📊</span>
+              <div class="mem-info"><div class="mem-name">Execution Tracker</div><div class="mem-role">GUS TDs · epic health · PRs · pilot progress · releases</div></div>
+              <span class="mem-level">L1</span>
+            </div>
+            <div class="org-member">
+              <span class="mem-emoji">🎯</span>
+              <div class="mem-info"><div class="mem-name">Customer Intel</div><div class="mem-role">SLA watcher (Argus) · account health · escalation playbook</div></div>
+              <span class="mem-level">L1</span>
+            </div>
+            <div class="org-member">
+              <span class="mem-emoji">🌐</span>
+              <div class="mem-info"><div class="mem-name">External Intel</div><div class="mem-role">Competitive pulse · product research · market brief · signals</div></div>
+              <span class="mem-level">L1</span>
+            </div>
+            <div class="org-member">
+              <span class="mem-emoji">🧠</span>
+              <div class="mem-info"><div class="mem-name">Council Runner</div><div class="mem-role">6-advisor council · 7-voice counsel · 10th-man · pressure test</div></div>
+              <span class="mem-level">L1</span>
+            </div>
+            <div class="org-member" style="border-left:3px solid var(--sf-orange); background:linear-gradient(90deg, #fff7ed, white);">
+              <span class="mem-emoji">⚖️</span>
+              <div class="mem-info"><div class="mem-name">Legal Counsel <span style="font-size:0.6rem; background:var(--sf-orange); color:white; padding:1px 5px; border-radius:4px; vertical-align:middle;">NEW</span></div><div class="mem-role">Precedent Bypass · PLR tracker · consent library · subprocessor monitor</div></div>
+              <span class="mem-level">L1</span>
+            </div>
+            <div class="org-member" style="border-left:3px solid var(--sf-orange); background:linear-gradient(90deg, #fff7ed, white);">
+              <span class="mem-emoji">💡</span>
+              <div class="mem-info"><div class="mem-name">Innovation Lab <span style="font-size:0.6rem; background:var(--sf-orange); color:white; padding:1px 5px; border-radius:4px; vertical-align:middle;">NEW</span></div><div class="mem-role">Pattern mining · idea generation · self-improve · productize · experiments</div></div>
+              <span class="mem-level">L1</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Production Division -->
+        <div class="org-division" style="border-top-color: var(--sf-purple);">
+          <h4>🏗️ Production Division</h4>
+          <div class="div-subtitle">Artifact creation — PRDs to prototypes to newsletters</div>
+          <div class="div-members">
+            <div class="org-member">
+              <span class="mem-emoji">🏗️</span>
+              <div class="mem-info"><div class="mem-name">Artifact Producer</div><div class="mem-role">10-step PDLC chain · PRDs · prototypes · blogs · release notes</div></div>
+              <span class="mem-level">L1</span>
+            </div>
+            <div class="org-member">
+              <span class="mem-emoji">🏦</span>
+              <div class="mem-info"><div class="mem-name">Account Dashboard Gen</div><div class="mem-role">Per-account HTML (5 tabs) — spawned by Customer Intel</div></div>
+              <span class="mem-level">L1</span>
+            </div>
+            <div class="org-member">
+              <span class="mem-emoji">🗺️</span>
+              <div class="mem-info"><div class="mem-name">Strategy Canvas Gen</div><div class="mem-role">Per-product strategy HTML (6 tabs) — spawned by External Intel</div></div>
+              <span class="mem-level">L1</span>
+            </div>
+            <div class="org-member">
+              <span class="mem-emoji">⚡</span>
+              <div class="mem-info"><div class="mem-name">SLDS2 LWC Prototype</div><div class="mem-role">Real LWC + SLDS2 · 85+ components · UX-reviewable</div></div>
+              <span class="mem-level">L1</span>
+            </div>
+            <div class="org-member">
+              <span class="mem-emoji">📰</span>
+              <div class="mem-info"><div class="mem-name">Newsletter Producer</div><div class="mem-role">Standalone · Data→Draft→Infographic (HTML→PNG)→Deploy · Quarterly</div></div>
+              <span class="mem-level">L1</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <div class="org-connector-v" style="height:20px;"></div>
+
+    <!-- Continuous Learning Division -->
+    <div class="org-level" style="width:100%;">
+      <div style="text-align:center; margin-bottom:16px;">
+        <span style="font-size:0.75rem; text-transform:uppercase; letter-spacing:1.5px; color:var(--text-muted); font-weight:600;">Continuous Learning Division (Self-Strengthening)</span>
+      </div>
+      <div class="org-division-row">
+        <div class="org-division" style="border-top-color: var(--sf-teal); max-width:520px;">
+          <h4>🔄 Continuous Learning Division</h4>
+          <div class="div-subtitle">Always-on background processes — learns from every interaction</div>
+          <div class="div-members">
+            <div class="org-member">
+              <span class="mem-emoji">📸</span>
+              <div class="mem-info"><div class="mem-name">Session-End Auto-Capture</div><div class="mem-role">Event-driven · fires on every session close · logs decisions</div></div>
+              <span class="mem-level">BG</span>
+            </div>
+            <div class="org-member">
+              <span class="mem-emoji">🎙️</span>
+              <div class="mem-info"><div class="mem-name">Voice Harvester</div><div class="mem-role">Daily EOD (18:30) · learns from sent messages · refines voice patterns</div></div>
+              <span class="mem-level">BG</span>
+            </div>
+            <div class="org-member">
+              <span class="mem-emoji">📊</span>
+              <div class="mem-info"><div class="mem-name">Passive Ledger Auto-Detect</div><div class="mem-role">Daily · diffs drafts vs sends · auto-populates quality ledger</div></div>
+              <span class="mem-level">BG</span>
+            </div>
+            <div class="org-member">
+              <span class="mem-emoji">🧬</span>
+              <div class="mem-info"><div class="mem-name">Reasoning Model Updater</div><div class="mem-role">Weekly · proposes reasoning refinements · pattern detection</div></div>
+              <span class="mem-level">BG</span>
+            </div>
+          </div>
+          <div style="margin-top:14px; padding:10px 14px; background:#f0fdfa; border-radius:8px; border:1px solid #99f6e4;">
+            <p style="font-size:0.72rem; color:var(--sf-teal); font-weight:600; margin-bottom:4px;">Auto-Enrichment Governance</p>
+            <p style="font-size:0.68rem; color:var(--text-muted); line-height:1.5;">JSONL = auto-write. Markdown = propose-only. Weekly human review.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="org-connector-v" style="height:20px;"></div>
+
+    <!-- Shared Services -->
+    <div class="org-level" style="width:100%;">
+      <div style="text-align:center; margin-bottom:12px;">
+        <span style="font-size:0.75rem; text-transform:uppercase; letter-spacing:1.5px; color:var(--text-muted); font-weight:600;">Shared Services (Matrix — serve multiple divisions)</span>
+      </div>
+      <div class="org-shared-services">
+        <div class="org-shared-card">
+          <div class="ss-emoji">📰</div>
+          <div class="ss-name">Morning Brief</div>
+          <div class="ss-desc">Aggregates all divisions → 4 outputs</div>
+        </div>
+        <div class="org-shared-card">
+          <div class="ss-emoji">📈</div>
+          <div class="ss-name">Dashboard Generator</div>
+          <div class="ss-desc">5-tab HTML · phone + offline</div>
+        </div>
+        <div class="org-shared-card">
+          <div class="ss-emoji">🧭</div>
+          <div class="ss-name">V2MOM Traceback</div>
+          <div class="ss-desc">Serves 3+ parents · strategy link</div>
+        </div>
+        <div class="org-shared-card">
+          <div class="ss-emoji">🔄</div>
+          <div class="ss-name">Basecamp V2MOM Reader</div>
+          <div class="ss-desc">Playwright scraper · cache infra</div>
+        </div>
+        <div class="org-shared-card">
+          <div class="ss-emoji">🔁</div>
+          <div class="ss-name">Feedback Loop</div>
+          <div class="ss-desc">QC / internal audit · learning</div>
+        </div>
+        <div class="org-shared-card" style="border:2px solid var(--sf-orange); background:linear-gradient(135deg, #fff7ed, white);">
+          <div class="ss-emoji">🧿</div>
+          <div class="ss-name">Jarvis Protocol</div>
+          <div class="ss-desc">Shared Context Layer · Pre-Read + Post-Write · Real-time awareness</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Governance Mechanisms -->
+  <div style="margin-top:40px;">
+    <h3 style="color:var(--sf-navy); text-align:center; margin-bottom:20px; font-size:1.2rem;">Governance Mechanisms</h3>
+    <div class="org-governance">
+      <div class="org-gov-card">
+        <h4>🔟 10th-Man Rule</h4>
+        <p>Every council forces each advisor to argue <strong>against</strong> their own position. Mandatory devil's advocate prevents groupthink. Blind spots are surfaced before synthesis.</p>
+      </div>
+      <div class="org-gov-card">
+        <h4>🚫 Kill Switch</h4>
+        <p>One file (<code>KILL_SWITCH</code>) halts the entire organization instantly. Checked at the top of every script. CEO retains ultimate control.</p>
+      </div>
+      <div class="org-gov-card">
+        <h4>🔐 Recipient Tiers</h4>
+        <p><strong>Tier 1 (Hard Block):</strong> Marc, Srini, Sri, Meir — drafts only, even on "send".<br><strong>Tier 2:</strong> Karishma, Laksh, Anand — send only on explicit phrase.</p>
+      </div>
+      <div class="org-gov-card">
+        <h4>📊 Evidence Gates</h4>
+        <p>5 gates across the PDLC chain. No PRD without evidence score ≥0.7. No prototype without RICE. No blog without release note. No auto-advance.</p>
+      </div>
+      <div class="org-gov-card">
+        <h4>📈 Promotion by Data</h4>
+        <p>L1→L2 requires 7+ days clean draft-quality ledger + &lt;10% substantive edits. Agents never promote themselves. CEO reviews + config commit.</p>
+      </div>
+      <div class="org-gov-card">
+        <h4>🔗 10 Chains</h4>
+        <p>Every multi-step process is a defined chain: morning_sweep · new_feature_pdlc · customer_meeting_prep · feedback_loop · v2mom_refresh · weekly_intel · artifact_iteration · council_run · <strong>legal_compliance</strong> · <strong>innovation_lab</strong>.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- CEO Analogy Table -->
+  <div style="margin-top:40px; background:white; border-radius:16px; padding:28px; box-shadow:0 2px 8px rgba(0,0,0,0.06);">
+    <h3 style="color:var(--sf-navy); margin-bottom:16px; text-align:center;">Why "CEO of Agents" Is the Right Model</h3>
+    <table class="org-analogy-table">
+      <thead>
+        <tr><th>CEO Pattern</th><th>How Mayuresh Does It</th><th>Org Theory Equivalent</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Sets strategy, doesn't execute</td><td>V2MOM measures flow down; agents trace all work back</td><td>Strategy deployment (Hoshin Kanri)</td></tr>
+        <tr><td>Reviews and approves</td><td>Every external output requires CEO review before send</td><td>Board approval process</td></tr>
+        <tr><td>Promotes based on data</td><td>7-day ledger + &lt;10% edits → L2 promotion</td><td>Performance-based delegation</td></tr>
+        <tr><td>Has a kill switch</td><td>Touch one file → entire org halts</td><td>Emergency shutdown authority</td></tr>
+        <tr><td>Mandatory dissent</td><td>10th-man peer review in every council</td><td>Israeli Intelligence 10th Man Rule</td></tr>
+        <tr><td>Divisions run in parallel</td><td>Communication + Intelligence + Production simultaneously</td><td>Divisional autonomy (P&L independence)</td></tr>
+        <tr><td>Shared services matrix</td><td>V2MOM Traceback serves 3+ divisions</td><td>Matrix organization</td></tr>
+        <tr><td>Dynamic task forces</td><td>Sub-specialists spawned on-demand by parents</td><td>Ad-hoc tiger teams</td></tr>
+        <tr><td>Shared situational awareness</td><td>Jarvis Protocol — real-time context layer (active-context.json)</td><td>Enterprise CRM / shared Slack channel for exec team</td></tr>
+        <tr><td>Building toward full delegation</td><td>God Mode (parked) = the endgame</td><td>CEO stepping back to board chair</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Org Model Labels -->
+  <div style="margin-top:32px; text-align:center; padding:24px; background:linear-gradient(135deg, #f0f4ff, #f5f0ff); border-radius:16px;">
+    <p style="font-size:1rem; color:var(--sf-navy); font-weight:600; margin-bottom:8px;">Organizational Model Classification</p>
+    <p style="font-size:0.9rem; color:var(--text-muted); line-height:1.8;">
+      <strong>Primary:</strong> Divisional (4 operating divisions: Communication + Intelligence + Production + Continuous Learning)<br>
+      <strong>Secondary:</strong> Matrix (shared services serving multiple divisions + Jarvis Protocol shared context layer)<br>
+      <strong>Governance:</strong> Stage-gate (evidence-gated chains) + 10th-man dissent<br>
+      <strong>Autonomy:</strong> Progressive delegation (L1 → L2 → L3 → God Mode)<br>
+      <strong>Context model:</strong> Jarvis Protocol — real-time shared awareness (Pre-Read + Post-Write) replaces post-hoc-only memory<br>
+      <strong>Scaling model:</strong> New capability = 1 registry row + 1 agent file (no reorg needed)
+    </p>
+  </div>
+</div>
+
+<!-- SECTION: ARCHITECTURE -->
+<div class="section active" id="section-architecture">
+  <h2 class="section-title">Agent Architecture — 22 Agents + Self-Strengthening Layer + Jarvis Protocol</h2>
+  <p class="section-desc">1 Lead orchestrator + 21 specialist agents (including 3 sub-specialists + 1 standalone) + 4 background self-strengthening processes + shared real-time context layer (Jarvis Protocol). Click any node to see its role and capabilities.</p>
+
+  <div class="arch-canvas" id="archCanvas">
+    <svg class="connections-svg" id="connectionsSvg"></svg>
+    <!-- Nodes positioned via JS -->
+  </div>
+
+  <div id="agentDetail" style="display:none; margin-top:24px; background:white; border-radius:12px; padding:24px; box-shadow:0 2px 12px rgba(0,0,0,0.08);">
+    <h3 id="detailName" style="color:var(--sf-navy); margin-bottom:8px;"></h3>
+    <p id="detailDesc" style="color:var(--text-muted); font-size:0.9rem; line-height:1.6;"></p>
+    <div id="detailCaps" style="margin-top:12px;"></div>
+  </div>
+
+  <!-- Jarvis Protocol Explainer -->
+  <div style="margin-top:40px; background:linear-gradient(135deg, #fffbeb, #fef3c7); border-radius:16px; padding:28px; border:2px solid #fbbf24;">
+    <h3 style="color:#92400e; margin-bottom:12px; font-size:1.1rem; display:flex; align-items:center; gap:8px;">
+      <span style="font-size:1.4rem;">🧿</span> Jarvis Protocol — Shared Real-Time Context
+      <span style="font-size:0.65rem; background:#d97706; color:white; padding:2px 8px; border-radius:4px; font-weight:700;">NEW IN v3.0</span>
+    </h3>
+    <p style="font-size:0.85rem; color:#78350f; margin-bottom:16px; line-height:1.6;">
+      Every specialist shares one brain file (<code>active-context.json</code>). Before acting, each agent reads what's happening. After completing, each agent updates what it learned. The difference between a team that meets daily vs. a team that shares a Slack channel.
+    </p>
+    <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:16px;">
+      <div style="background:white; border-radius:10px; padding:14px; border-left:4px solid #d97706;">
+        <h4 style="font-size:0.8rem; color:#92400e; margin-bottom:4px;">Pre-Read Protocol</h4>
+        <p style="font-size:0.72rem; color:var(--text-muted); line-height:1.5;">Every specialist reads active-context + last 5 decisions + all lessons BEFORE any tool calls. ~2s overhead for full context awareness.</p>
+      </div>
+      <div style="background:white; border-radius:10px; padding:14px; border-left:4px solid #d97706;">
+        <h4 style="font-size:0.8rem; color:#92400e; margin-bottom:4px;">Post-Write Protocol</h4>
+        <p style="font-size:0.72rem; color:var(--text-muted); line-height:1.5;">After completing, specialists merge findings into active-context. Merge, not overwrite. Critical items, decisions, learnings all persist.</p>
+      </div>
+      <div style="background:white; border-radius:10px; padding:14px; border-left:4px solid #d97706;">
+        <h4 style="font-size:0.8rem; color:#92400e; margin-bottom:4px;">Size Guardrails</h4>
+        <p style="font-size:0.72rem; color:var(--text-muted); line-height:1.5;">15KB max · 14-day staleness auto-archive · 60 items hard cap. Never grows unbounded. Old items age out to archive.jsonl.</p>
+      </div>
+      <div style="background:white; border-radius:10px; padding:14px; border-left:4px solid #d97706;">
+        <h4 style="font-size:0.8rem; color:#92400e; margin-bottom:4px;">Cross-Pollination</h4>
+        <p style="font-size:0.72rem; color:var(--text-muted); line-height:1.5;">Legal-counsel finds precedent → customer-response knows to reference it. Innovation-lab spots pattern → artifact-producer uses it in next PRD.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SECTION: SWEEP FLOW -->
+<div class="section" id="section-flow">
+  <h2 class="section-title">Morning Sweep — How Agents Collaborate</h2>
+  <p class="section-desc">When Mayuresh says "Agent MV" — here's what happens in ~3 minutes.</p>
+
+  <div class="flow-container">
+    <div class="flow-phase">
+      <div class="flow-phase-header">
+        <div class="flow-phase-num">1</div>
+        <h3>Parallel Fan-Out (Group 1)</h3>
+      </div>
+      <p style="font-size:0.85rem; color:var(--text-muted); margin-bottom:16px;">4 agents launch simultaneously — zero dependencies between them.</p>
+      <div class="flow-agents">
+        <div class="flow-agent-card" style="border-left-color:var(--sf-blue);">
+          <h4>🔍 Slack Triage</h4>
+          <p>Scans 15+ channels for mentions, threads needing response, priority signals</p>
+        </div>
+        <div class="flow-agent-card" style="border-left-color:var(--sf-green);">
+          <h4>🤝 Customer Response</h4>
+          <p>Monitors #help-apexguru, #scale-center-support, GTA150 accounts</p>
+        </div>
+        <div class="flow-agent-card" style="border-left-color:var(--sf-purple);">
+          <h4>📧 Gmail Responder</h4>
+          <p>Classifies unread email, drafts internal replies</p>
+        </div>
+        <div class="flow-agent-card" style="border-left-color:var(--sf-teal);">
+          <h4>📋 Workspace Digest</h4>
+          <p>Scans Docs, Drive, Calendar, Gemini transcripts for action items</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="flow-arrow">⬇</div>
+
+    <div class="flow-phase">
+      <div class="flow-phase-header">
+        <div class="flow-phase-num">2</div>
+        <h3>Parallel Fan-Out (Group 2)</h3>
+      </div>
+      <p style="font-size:0.85rem; color:var(--text-muted); margin-bottom:16px;">3 agents that benefit from workspace-digest output (calendar feed, transcript data).</p>
+      <div class="flow-agents">
+        <div class="flow-agent-card" style="border-left-color:var(--sf-orange);">
+          <h4>📅 Meeting Ops</h4>
+          <p>Pre-meeting briefs, action item tracking, conflict detection, V2MOM traceback</p>
+        </div>
+        <div class="flow-agent-card" style="border-left-color:var(--sf-red);">
+          <h4>📊 Execution Tracker</h4>
+          <p>GUS TD tracker, aging work items, PR reviews, epic health, pilot progress</p>
+        </div>
+        <div class="flow-agent-card" style="border-left-color:var(--sf-teal);">
+          <h4>🎯 Customer Intel</h4>
+          <p>SLA violations (Argus), signature account health, escalation playbook</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="flow-arrow">⬇</div>
+
+    <div class="flow-phase">
+      <div class="flow-phase-header">
+        <div class="flow-phase-num">3</div>
+        <h3>Aggregation & Delivery</h3>
+      </div>
+      <p style="font-size:0.85rem; color:var(--text-muted); margin-bottom:16px;">Morning Brief consumes all specialist outputs → produces 4 deliverables.</p>
+      <div class="flow-agents">
+        <div class="flow-agent-card" style="border-left-color:var(--sf-navy);">
+          <h4>📰 Morning Brief</h4>
+          <p>Aggregates all 6 specialists into a single coherent brief</p>
+        </div>
+        <div class="flow-agent-card" style="border-left-color:#666;">
+          <h4>→ Markdown Brief</h4>
+          <p>Full structured report at artifacts/morning-brief/</p>
+        </div>
+        <div class="flow-agent-card" style="border-left-color:#666;">
+          <h4>→ Slack Canvas</h4>
+          <p>Living canvas updated each run</p>
+        </div>
+        <div class="flow-agent-card" style="border-left-color:#666;">
+          <h4>→ HTML Dashboard</h4>
+          <p>Phone-friendly, offline-capable, 5-tab dashboard</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SECTION: TIMELINE -->
+<div class="section" id="section-timeline">
+  <h2 class="section-title">Daily Operating Rhythm</h2>
+  <p class="section-desc">Agent MV operates across 4 daily windows, with SLA monitoring during working hours.</p>
+
+  <div class="timeline-container">
+    <div class="timeline-track">
+      <div class="timeline-line"></div>
+      <div class="timeline-events">
+        <div class="timeline-event" style="border-left-color: var(--sf-orange);">
+          <span class="time">07:00</span>
+          <div class="dot" style="background: var(--sf-orange);"></div>
+          <h3>🌅 Morning Brief</h3>
+          <p>Full parallel sweep — overnight Slack, Gmail, GUS changes, calendar prep. Produces the day's briefing across 4 output channels.</p>
+          <div class="agents-involved">
+            <span class="agent-badge">slack-triage</span>
+            <span class="agent-badge">customer-response</span>
+            <span class="agent-badge">gmail-responder</span>
+            <span class="agent-badge">workspace-digest</span>
+            <span class="agent-badge">meeting-ops</span>
+            <span class="agent-badge">execution-tracker</span>
+            <span class="agent-badge">morning-brief</span>
+          </div>
+        </div>
+
+        <div class="timeline-event" style="border-left-color: var(--sf-green);">
+          <span class="time">09:00</span>
+          <div class="dot" style="background: var(--sf-green);"></div>
+          <h3>🟢 Working Hours Begin</h3>
+          <p>SLA Violation Watcher activates. Monitors Argus + UIP for GTA150 account violations in real-time. Alerts within minutes.</p>
+          <div class="agents-involved">
+            <span class="agent-badge">customer-intel</span>
+          </div>
+        </div>
+
+        <div class="timeline-event" style="border-left-color: var(--sf-blue);">
+          <span class="time">09:00–18:00</span>
+          <div class="dot" style="background: var(--sf-blue);"></div>
+          <h3>🎯 On-Demand Capabilities</h3>
+          <p>Mayuresh invokes capabilities as needed: /discover, /council, /legal-bypass, /innovation-scan, /newsletter, /competitive-pulse, etc. 64 capabilities available.</p>
+          <div class="agents-involved">
+            <span class="agent-badge">artifact-producer</span>
+            <span class="agent-badge">newsletter-producer</span>
+            <span class="agent-badge">external-intel</span>
+            <span class="agent-badge">council-runner</span>
+            <span class="agent-badge">legal-counsel</span>
+            <span class="agent-badge">innovation-lab</span>
+            <span class="agent-badge">v2mom-traceback</span>
+          </div>
+        </div>
+
+        <div class="timeline-event" style="border-left-color: var(--sf-purple);">
+          <span class="time">13:00</span>
+          <div class="dot" style="background: var(--sf-purple);"></div>
+          <h3>🍽️ Lunch Triage</h3>
+          <p>Quick Slack scan for anything that came in during morning meetings. Catches urgent items that need same-day response.</p>
+          <div class="agents-involved">
+            <span class="agent-badge">slack-triage</span>
+            <span class="agent-badge">customer-response</span>
+          </div>
+        </div>
+
+        <div class="timeline-event" style="border-left-color: var(--sf-teal);">
+          <span class="time">18:00</span>
+          <div class="dot" style="background: var(--sf-teal);"></div>
+          <h3>🔴 SLA Watcher → Batch Mode</h3>
+          <p>Real-time alerting ends. Violations queued for next morning brief.</p>
+          <div class="agents-involved">
+            <span class="agent-badge">customer-intel</span>
+          </div>
+        </div>
+
+        <div class="timeline-event" style="border-left-color: var(--sf-orange);">
+          <span class="time">18:30</span>
+          <div class="dot" style="background: var(--sf-orange);"></div>
+          <h3>🌆 Evening Sweep</h3>
+          <p>Full sweep + worklog compilation. Captures the day's meetings, decisions, and drafts into structured daily log.</p>
+          <div class="agents-involved">
+            <span class="agent-badge">all specialists</span>
+            <span class="agent-badge">execution-tracker</span>
+          </div>
+        </div>
+
+        <div class="timeline-event" style="border-left-color: #666;">
+          <span class="time">22:00</span>
+          <div class="dot" style="background: #666;"></div>
+          <h3>🌙 Late Sweep</h3>
+          <p>Minimal — catches overnight queue from US-timezone counterparts. Priority signals only.</p>
+          <div class="agents-involved">
+            <span class="agent-badge">slack-triage</span>
+          </div>
+        </div>
+
+        <div class="timeline-event" style="border-left-color: var(--sf-blue);">
+          <span class="time">Monday</span>
+          <div class="dot" style="background: var(--sf-blue);"></div>
+          <h3>📊 Weekly Intel Cycle</h3>
+          <p>Extended Monday sweep: Epic health deep-pass + Signature account health + Market intel brief + Planned release tracker.</p>
+          <div class="agents-involved">
+            <span class="agent-badge">execution-tracker</span>
+            <span class="agent-badge">customer-intel</span>
+            <span class="agent-badge">external-intel</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Self-Strengthening Background Layer -->
+  <div style="margin-top:40px; background:linear-gradient(135deg, #f0fdfa, #e0f2f1); border-radius:16px; padding:28px; border:1px solid #99f6e4;">
+    <h3 style="color:var(--sf-teal); margin-bottom:8px; font-size:1.1rem;">🔄 Self-Strengthening Background Layer (Always-On)</h3>
+    <p style="font-size:0.85rem; color:var(--text-muted); margin-bottom:20px;">Runs independently of the daily sweep cadence — event-driven and scheduled enrichment.</p>
+    <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:16px;">
+      <div style="background:white; border-radius:10px; padding:16px; border-left:4px solid var(--sf-teal);">
+        <h4 style="font-size:0.85rem; color:var(--sf-navy); margin-bottom:4px;">📸 Session-End Hook</h4>
+        <p style="font-size:0.75rem; color:var(--text-muted);">Every session close (event-driven)</p>
+        <p style="font-size:0.72rem; color:var(--sf-teal); margin-top:6px; font-weight:600;">→ memory/*.jsonl</p>
+      </div>
+      <div style="background:white; border-radius:10px; padding:16px; border-left:4px solid var(--sf-teal);">
+        <h4 style="font-size:0.85rem; color:var(--sf-navy); margin-bottom:4px;">🎙️ Voice Harvester</h4>
+        <p style="font-size:0.75rem; color:var(--text-muted);">Daily 18:30 IST</p>
+        <p style="font-size:0.72rem; color:var(--sf-teal); margin-top:6px; font-weight:600;">→ voice-samples-proposed.md</p>
+      </div>
+      <div style="background:white; border-radius:10px; padding:16px; border-left:4px solid var(--sf-teal);">
+        <h4 style="font-size:0.85rem; color:var(--sf-navy); margin-bottom:4px;">📊 Passive Ledger Detect</h4>
+        <p style="font-size:0.75rem; color:var(--text-muted);">Daily (diffs drafts vs sends)</p>
+        <p style="font-size:0.72rem; color:var(--sf-teal); margin-top:6px; font-weight:600;">→ draft-quality-ledger.md</p>
+      </div>
+      <div style="background:white; border-radius:10px; padding:16px; border-left:4px solid var(--sf-teal);">
+        <h4 style="font-size:0.85rem; color:var(--sf-navy); margin-bottom:4px;">🧬 Reasoning Updater</h4>
+        <p style="font-size:0.75rem; color:var(--text-muted);">Weekly (Sundays)</p>
+        <p style="font-size:0.72rem; color:var(--sf-teal); margin-top:6px; font-weight:600;">→ reasoning-refinements-proposed.md</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SECTION: CAPABILITIES -->
+<div class="section" id="section-capabilities">
+  <h2 class="section-title">65 Active Capabilities + 8 Workflow Scripts</h2>
+  <p class="section-desc">Grouped by domain. Each capability is a discrete, invocable unit of work. Phase 3 adds Legal (7) + Innovation (5) + Jarvis Protocol (1 meta). Multi-agent Workflows add structured orchestration with adversarial verification.</p>
+
+  <div style="display:flex; gap:8px; margin-bottom:24px; flex-wrap:wrap;">
+    <button class="filter-btn active" onclick="filterCaps('all')">All (64)</button>
+    <button class="filter-btn" onclick="filterCaps('sweep')">Daily Sweep</button>
+    <button class="filter-btn" onclick="filterCaps('ondemand')">On-Demand</button>
+    <button class="filter-btn" onclick="filterCaps('weekly')">Weekly</button>
+    <button class="filter-btn" onclick="filterCaps('chain')">PDLC Chain</button>
+    <button class="filter-btn" onclick="filterCaps('background')">Self-Strengthening</button>
+  </div>
+
+  <div class="cap-grid" id="capGrid"></div>
+</div>
+
+<!-- SECTION: TRUST LADDER -->
+<div class="section" id="section-trust">
+  <h2 class="section-title">Trust Ladder — Progressive Autonomy</h2>
+  <p class="section-desc">Agents earn autonomy through demonstrated quality. Currently all at L1 (draft-only). Promotion is data-driven.</p>
+
+  <div class="trust-ladder">
+    <div class="trust-level current">
+      <h3>L1 — Draft Only <span class="trust-badge active">CURRENT (all 22 agents)</span></h3>
+      <p>Agents produce drafts to local files. Nothing leaves the system without Mayuresh's explicit review and approval. Morning Brief DM to self is the only external output.</p>
+    </div>
+    <div class="trust-level next">
+      <h3>L2 — Auto-Ack <span class="trust-badge pending">NEXT (infrastructure ready)</span></h3>
+      <p><strong>Requires:</strong> 7+ days clean draft-quality ledger, &lt;10% substantive edits, config change + git commit + 3-day dry-run.<br>
+      <strong>Scope:</strong> Peer DMs only. Max 2 sentences. No commitments. Never leadership. Never customers.</p>
+      <p style="margin-top:10px; padding:8px 12px; background:#f0fdfa; border-radius:8px; font-size:0.8rem; color:var(--sf-teal); border:1px solid #99f6e4;"><strong>Auto-enrichment feeds L1→L2 data passively</strong> — ledger auto-populates from draft-vs-send diffs. No manual "ledger:" commands needed once active.</p>
+    </div>
+    <div class="trust-level future">
+      <h3>L3 — Guided Send <span class="trust-badge locked">FUTURE</span></h3>
+      <p><strong>Requires:</strong> 14+ days clean L2, per-pattern ack_templates blessing.<br>
+      <strong>Scope:</strong> Pattern-matched responses only. Customer channels remain read-only regardless.</p>
+    </div>
+    <div class="trust-level future">
+      <h3>God Mode <span class="trust-badge locked">PARKED</span></h3>
+      <p>Full autonomous operation: cron-driven, auto-acknowledge, narrow autonomous sends, kill-switch governed. Explicitly parked by Mayuresh — will be activated when trust data supports it.</p>
+    </div>
+  </div>
+
+  <div style="margin-top:32px; background:white; border-radius:12px; padding:24px; max-width:800px; margin-left:auto; margin-right:auto;">
+    <h3 style="color:var(--sf-navy); margin-bottom:12px;">🛡️ Hard Safety Rails (all levels)</h3>
+    <ul style="font-size:0.85rem; color:var(--text-muted); line-height:2; list-style:none; padding:0;">
+      <li>❌ Never sends to leadership (Tier 1: Marc, Srini, Sri, Meir — even at L3)</li>
+      <li>❌ Never promises dates, pricing, IP stability, or scope</li>
+      <li>❌ Never writes to external systems (Basecamp, GUS in sweeps, Google Docs)</li>
+      <li>❌ Never uses customer names in external content without explicit approval</li>
+      <li>❌ Never describes Unused Methods as runtime-tracked</li>
+      <li>❌ Customer channels always read-only — regardless of level</li>
+      <li>❌ Cron activation requires explicit word + N-run validation</li>
+      <li>✅ Kill switch: touch one file → entire system halts instantly</li>
+    </ul>
+  </div>
+</div>
+
+<!-- SECTION: WORKFLOWS (NEW — Multi-Agent Orchestration) -->
+<div class="section" id="section-workflows">
+  <h2 class="section-title">⚡ Multi-Agent Workflow Orchestration</h2>
+  <p class="section-desc">Agent MV now uses deterministic Workflow scripts with structured output, adversarial verification, and multi-phase pipelines. This is the difference between "spawn N agents and hope" and "orchestrate, verify, synthesize."</p>
+
+  <!-- Before vs After -->
+  <div style="display:grid; grid-template-columns:1fr 1fr; gap:24px; margin-bottom:32px;">
+    <div style="background:#fff5f5; border-radius:12px; padding:20px; border-left:4px solid var(--sf-red);">
+      <h3 style="font-size:0.9rem; color:var(--sf-red); margin-bottom:12px;">❌ Before (Flat Dispatch)</h3>
+      <div style="font-size:0.8rem; color:var(--text-muted); line-height:1.8; font-family:monospace;">
+        Lead → spawn 7 agents<br>
+        → each writes markdown files<br>
+        → morning-brief reads those files<br>
+        → hope nothing was wrong<br>
+        → done
+      </div>
+      <p style="font-size:0.75rem; margin-top:12px; color:var(--sf-red);">No verification · No dedup · No structured data · No error isolation</p>
+    </div>
+    <div style="background:#f0fdf4; border-radius:12px; padding:20px; border-left:4px solid var(--sf-green);">
+      <h3 style="font-size:0.9rem; color:var(--sf-green); margin-bottom:12px;">✅ After (Workflow Orchestration)</h3>
+      <div style="font-size:0.8rem; color:var(--text-muted); line-height:1.8; font-family:monospace;">
+        Lead → Workflow({name})<br>
+        → JSON schemas enforce structure<br>
+        → adversarial agents verify findings<br>
+        → dedup across sources<br>
+        → synthesize validated output
+      </div>
+      <p style="font-size:0.75rem; margin-top:12px; color:var(--sf-green);">Structured · Verified · Deduplicated · Resilient · Deterministic</p>
+    </div>
+  </div>
+
+  <!-- 8 Workflow Cards -->
+  <h3 style="font-size:1.1rem; font-weight:600; color:var(--sf-navy); margin-bottom:16px;">8 Workflow Scripts · 2,376 Lines</h3>
+  <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(320px, 1fr)); gap:16px; margin-bottom:32px;">
+
+    <div style="background:white; border-radius:12px; padding:16px; border-top:4px solid var(--sf-blue); box-shadow:0 2px 8px rgba(0,0,0,0.06);">
+      <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;"><span style="font-size:1.2rem;">🌅</span><strong style="font-size:0.85rem;">morning-sweep.js</strong><span style="font-size:0.7rem; background:#dbeafe; color:#1e40af; padding:2px 8px; border-radius:10px;">426 lines</span></div>
+      <div style="font-size:0.75rem; color:var(--text-muted); margin-bottom:8px;">The daily sweep — replaces flat Agent dispatch with verified pipeline</div>
+      <div style="display:flex; gap:4px; flex-wrap:wrap;">
+        <span style="font-size:0.65rem; background:#f0f4ff; padding:2px 6px; border-radius:4px;">Triage (4∥)</span>
+        <span style="font-size:0.65rem; background:#f0f4ff; padding:2px 6px; border-radius:4px;">→ Enrich</span>
+        <span style="font-size:0.65rem; background:#f0f4ff; padding:2px 6px; border-radius:4px;">→ Verify</span>
+        <span style="font-size:0.65rem; background:#f0f4ff; padding:2px 6px; border-radius:4px;">→ Synthesize</span>
+      </div>
+      <div style="font-size:0.65rem; color:var(--sf-blue); margin-top:6px;">Pattern: Parallel + barrier + adversarial verify</div>
+    </div>
+
+    <div style="background:white; border-radius:12px; padding:16px; border-top:4px solid var(--sf-navy); box-shadow:0 2px 8px rgba(0,0,0,0.06);">
+      <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;"><span style="font-size:1.2rem;">🧠</span><strong style="font-size:0.85rem;">council-run.js</strong><span style="font-size:0.7rem; background:#e0e7ff; color:#3730a3; padding:2px 8px; border-radius:10px;">302 lines</span></div>
+      <div style="font-size:0.75rem; color:var(--text-muted); margin-bottom:8px;">6-advisor LLM Council with anonymous peer review (Karpathy methodology)</div>
+      <div style="display:flex; gap:4px; flex-wrap:wrap;">
+        <span style="font-size:0.65rem; background:#f0f4ff; padding:2px 6px; border-radius:4px;">Frame</span>
+        <span style="font-size:0.65rem; background:#f0f4ff; padding:2px 6px; border-radius:4px;">→ 6 Advisors (∥)</span>
+        <span style="font-size:0.65rem; background:#f0f4ff; padding:2px 6px; border-radius:4px;">→ Peer Review</span>
+        <span style="font-size:0.65rem; background:#f0f4ff; padding:2px 6px; border-radius:4px;">→ Chairman</span>
+      </div>
+      <div style="font-size:0.65rem; color:var(--sf-navy); margin-top:6px;">Pattern: Judge panel + perspective-diverse verify</div>
+    </div>
+
+    <div style="background:white; border-radius:12px; padding:16px; border-top:4px solid var(--sf-purple); box-shadow:0 2px 8px rgba(0,0,0,0.06);">
+      <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;"><span style="font-size:1.2rem;">🔭</span><strong style="font-size:0.85rem;">innovation-scan.js</strong><span style="font-size:0.7rem; background:#f3e8ff; color:#6b21a8; padding:2px 8px; border-radius:10px;">319 lines</span></div>
+      <div style="font-size:0.75rem; color:var(--text-muted); margin-bottom:8px;">Multi-modal tech horizon scan — 4 parallel search sources</div>
+      <div style="display:flex; gap:4px; flex-wrap:wrap;">
+        <span style="font-size:0.65rem; background:#f0f4ff; padding:2px 6px; border-radius:4px;">Scan (4∥)</span>
+        <span style="font-size:0.65rem; background:#f0f4ff; padding:2px 6px; border-radius:4px;">→ Dedup</span>
+        <span style="font-size:0.65rem; background:#f0f4ff; padding:2px 6px; border-radius:4px;">→ Evaluate</span>
+        <span style="font-size:0.65rem; background:#f0f4ff; padding:2px 6px; border-radius:4px;">→ Synthesize</span>
+      </div>
+      <div style="font-size:0.65rem; color:var(--sf-purple); margin-top:6px;">Pattern: Multi-modal sweep + dedup + judge panel</div>
+    </div>
+
+    <div style="background:white; border-radius:12px; padding:16px; border-top:4px solid #f59e0b; box-shadow:0 2px 8px rgba(0,0,0,0.06);">
+      <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;"><span style="font-size:1.2rem;">💡</span><strong style="font-size:0.85rem;">idea-spark.js</strong><span style="font-size:0.7rem; background:#fef3c7; color:#92400e; padding:2px 8px; border-radius:10px;">309 lines</span></div>
+      <div style="font-size:0.75rem; color:var(--text-muted); margin-bottom:8px;">Structured brainstorming — 5 perspectives × 3 adversarial judges</div>
+      <div style="display:flex; gap:4px; flex-wrap:wrap;">
+        <span style="font-size:0.65rem; background:#f0f4ff; padding:2px 6px; border-radius:4px;">Frame</span>
+        <span style="font-size:0.65rem; background:#f0f4ff; padding:2px 6px; border-radius:4px;">→ 5 Ideate (∥)</span>
+        <span style="font-size:0.65rem; background:#f0f4ff; padding:2px 6px; border-radius:4px;">→ 3 Judges (∥)</span>
+        <span style="font-size:0.65rem; background:#f0f4ff; padding:2px 6px; border-radius:4px;">→ Winners</span>
+      </div>
+      <div style="font-size:0.65rem; color:#92400e; margin-top:6px;">Pattern: Judge panel + adversarial verification</div>
+    </div>
+
+    <div style="background:white; border-radius:12px; padding:16px; border-top:4px solid var(--sf-red); box-shadow:0 2px 8px rgba(0,0,0,0.06);">
+      <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;"><span style="font-size:1.2rem;">🔧</span><strong style="font-size:0.85rem;">self-improve.js</strong><span style="font-size:0.7rem; background:#fee2e2; color:#991b1b; padding:2px 8px; border-radius:10px;">282 lines · ✅ TESTED</span></div>
+      <div style="font-size:0.75rem; color:var(--text-muted); margin-bottom:8px;">Meta-innovation — Agent MV analyzes itself and proposes upgrades</div>
+      <div style="display:flex; gap:4px; flex-wrap:wrap;">
+        <span style="font-size:0.65rem; background:#f0f4ff; padding:2px 6px; border-radius:4px;">Measure</span>
+        <span style="font-size:0.65rem; background:#f0f4ff; padding:2px 6px; border-radius:4px;">→ Diagnose</span>
+        <span style="font-size:0.65rem; background:#f0f4ff; padding:2px 6px; border-radius:4px;">→ 3 Proposals (∥)</span>
+        <span style="font-size:0.65rem; background:#fecaca; padding:2px 6px; border-radius:4px;">→ Stress-Test 🎯</span>
+        <span style="font-size:0.65rem; background:#f0f4ff; padding:2px 6px; border-radius:4px;">→ Survivors</span>
+      </div>
+      <div style="font-size:0.65rem; color:var(--sf-red); margin-top:6px;">Pattern: Adversarial stress-test (default: reject)</div>
+    </div>
+
+    <div style="background:white; border-radius:12px; padding:16px; border-top:4px solid var(--sf-green); box-shadow:0 2px 8px rgba(0,0,0,0.06);">
+      <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;"><span style="font-size:1.2rem;">🏭</span><strong style="font-size:0.85rem;">productize.js</strong><span style="font-size:0.7rem; background:#dcfce7; color:#166534; padding:2px 8px; border-radius:10px;">288 lines</span></div>
+      <div style="font-size:0.75rem; color:var(--text-muted); margin-bottom:8px;">Customer pain → product opportunity brief with RICE + V2MOM alignment</div>
+      <div style="display:flex; gap:4px; flex-wrap:wrap;">
+        <span style="font-size:0.65rem; background:#f0f4ff; padding:2px 6px; border-radius:4px;">Gather (3∥)</span>
+        <span style="font-size:0.65rem; background:#f0f4ff; padding:2px 6px; border-radius:4px;">→ Cluster</span>
+        <span style="font-size:0.65rem; background:#f0f4ff; padding:2px 6px; border-radius:4px;">→ Size</span>
+        <span style="font-size:0.65rem; background:#f0f4ff; padding:2px 6px; border-radius:4px;">→ Brief</span>
+      </div>
+      <div style="font-size:0.65rem; color:var(--sf-green); margin-top:6px;">Pattern: Multi-source gather + semantic clustering</div>
+    </div>
+
+    <div style="background:white; border-radius:12px; padding:16px; border-top:4px solid var(--sf-teal); box-shadow:0 2px 8px rgba(0,0,0,0.06);">
+      <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;"><span style="font-size:1.2rem;">🧪</span><strong style="font-size:0.85rem;">experiment-design.js</strong><span style="font-size:0.7rem; background:#ccfbf1; color:#115e59; padding:2px 8px; border-radius:10px;">229 lines</span></div>
+      <div style="font-size:0.75rem; color:var(--text-muted); margin-bottom:8px;">Rapid experiment blueprints — test ideas cheaply before investing</div>
+      <div style="display:flex; gap:4px; flex-wrap:wrap;">
+        <span style="font-size:0.65rem; background:#f0f4ff; padding:2px 6px; border-radius:4px;">Decompose</span>
+        <span style="font-size:0.65rem; background:#f0f4ff; padding:2px 6px; border-radius:4px;">→ 3 Designs (∥)</span>
+        <span style="font-size:0.65rem; background:#f0f4ff; padding:2px 6px; border-radius:4px;">→ Critique</span>
+        <span style="font-size:0.65rem; background:#f0f4ff; padding:2px 6px; border-radius:4px;">→ Blueprint</span>
+      </div>
+      <div style="font-size:0.65rem; color:var(--sf-teal); margin-top:6px;">Pattern: Multi-scale design + adversarial critique</div>
+    </div>
+
+  </div>
+
+  <!-- Orchestration Patterns -->
+  <h3 style="font-size:1.1rem; font-weight:600; color:var(--sf-navy); margin-bottom:16px;">7 Orchestration Patterns</h3>
+  <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(200px, 1fr)); gap:12px; margin-bottom:32px;">
+    <div style="background:white; border-radius:8px; padding:12px; text-align:center; box-shadow:0 1px 4px rgba(0,0,0,0.06);">
+      <div style="font-size:1.5rem; margin-bottom:4px;">🔀</div>
+      <div style="font-size:0.75rem; font-weight:600;">Multi-Modal Sweep</div>
+      <div style="font-size:0.65rem; color:var(--text-muted);">N agents search different source types</div>
+    </div>
+    <div style="background:white; border-radius:8px; padding:12px; text-align:center; box-shadow:0 1px 4px rgba(0,0,0,0.06);">
+      <div style="font-size:1.5rem; margin-bottom:4px;">⚖️</div>
+      <div style="font-size:0.75rem; font-weight:600;">Judge Panel</div>
+      <div style="font-size:0.65rem; color:var(--text-muted);">N attempts scored by M judges</div>
+    </div>
+    <div style="background:white; border-radius:8px; padding:12px; text-align:center; box-shadow:0 1px 4px rgba(0,0,0,0.06);">
+      <div style="font-size:1.5rem; margin-bottom:4px;">🎯</div>
+      <div style="font-size:0.75rem; font-weight:600;">Adversarial Verify</div>
+      <div style="font-size:0.65rem; color:var(--text-muted);">Skeptics try to KILL proposals</div>
+    </div>
+    <div style="background:white; border-radius:8px; padding:12px; text-align:center; box-shadow:0 1px 4px rgba(0,0,0,0.06);">
+      <div style="font-size:1.5rem; margin-bottom:4px;">➡️</div>
+      <div style="font-size:0.75rem; font-weight:600;">Pipeline (no barrier)</div>
+      <div style="font-size:0.65rem; color:var(--text-muted);">Items flow independently</div>
+    </div>
+    <div style="background:white; border-radius:8px; padding:12px; text-align:center; box-shadow:0 1px 4px rgba(0,0,0,0.06);">
+      <div style="font-size:1.5rem; margin-bottom:4px;">⏸️</div>
+      <div style="font-size:0.75rem; font-weight:600;">Parallel + Barrier</div>
+      <div style="font-size:0.65rem; color:var(--text-muted);">Fan-out, wait, then proceed</div>
+    </div>
+    <div style="background:white; border-radius:8px; padding:12px; text-align:center; box-shadow:0 1px 4px rgba(0,0,0,0.06);">
+      <div style="font-size:1.5rem; margin-bottom:4px;">🔄</div>
+      <div style="font-size:0.75rem; font-weight:600;">Loop-Until-Dry</div>
+      <div style="font-size:0.65rem; color:var(--text-muted);">Scan until K rounds empty</div>
+    </div>
+    <div style="background:white; border-radius:8px; padding:12px; text-align:center; box-shadow:0 1px 4px rgba(0,0,0,0.06);">
+      <div style="font-size:1.5rem; margin-bottom:4px;">👁️</div>
+      <div style="font-size:0.75rem; font-weight:600;">Perspective-Diverse</div>
+      <div style="font-size:0.65rem; color:var(--text-muted);">Each judge has distinct lens</div>
+    </div>
+  </div>
+
+  <!-- Proven Results -->
+  <h3 style="font-size:1.1rem; font-weight:600; color:var(--sf-navy); margin-bottom:16px;">Proven Results — /self-improve Test Run (2026-06-08)</h3>
+  <div style="background:linear-gradient(135deg, #f8fafc, #f0f9ff); border-radius:12px; padding:24px; border:1px solid var(--border); margin-bottom:24px;">
+    <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(140px, 1fr)); gap:16px; margin-bottom:20px;">
+      <div style="text-align:center;">
+        <div style="font-size:2rem; font-weight:700; color:var(--sf-blue);">9</div>
+        <div style="font-size:0.7rem; color:var(--text-muted);">Agents Spawned</div>
+      </div>
+      <div style="text-align:center;">
+        <div style="font-size:2rem; font-weight:700; color:var(--sf-purple);">627K</div>
+        <div style="font-size:0.7rem; color:var(--text-muted);">Tokens Used</div>
+      </div>
+      <div style="text-align:center;">
+        <div style="font-size:2rem; font-weight:700; color:var(--sf-green);">190</div>
+        <div style="font-size:0.7rem; color:var(--text-muted);">Tool Calls</div>
+      </div>
+      <div style="text-align:center;">
+        <div style="font-size:2rem; font-weight:700; color:var(--sf-orange);">15m</div>
+        <div style="font-size:0.7rem; color:var(--text-muted);">Duration</div>
+      </div>
+      <div style="text-align:center;">
+        <div style="font-size:2rem; font-weight:700; color:var(--sf-red);">2/3</div>
+        <div style="font-size:0.7rem; color:var(--text-muted);">Proposals Killed</div>
+      </div>
+    </div>
+    <div style="background:white; border-radius:8px; padding:16px; border-left:4px solid var(--sf-green);">
+      <p style="font-size:0.8rem; font-weight:600; color:var(--sf-navy); margin-bottom:4px;">Key Insight Surfaced:</p>
+      <p style="font-size:0.8rem; color:var(--text-muted); font-style:italic;">"The #1 blocker to God Mode is MCP auth decay — not draft quality. 70% of HELD entries are infrastructure-caused, not quality-caused."</p>
+      <p style="font-size:0.7rem; color:var(--sf-green); margin-top:8px;">This insight was only possible because the adversarial stress-test killed simpler explanations first.</p>
+    </div>
+  </div>
+
+  <!-- God Mode Progress -->
+  <div style="background:white; border-radius:12px; padding:20px; box-shadow:0 2px 8px rgba(0,0,0,0.06);">
+    <h3 style="font-size:0.9rem; font-weight:600; color:var(--sf-navy); margin-bottom:12px;">Progress to God Mode: ~48%</h3>
+    <div style="display:grid; grid-template-columns:1fr 1fr 1fr 1fr 1fr; gap:8px;">
+      <div style="text-align:center;">
+        <div style="height:8px; background:#22c55e; border-radius:4px; margin-bottom:4px;"></div>
+        <div style="font-size:0.6rem; color:var(--text-muted);">Capabilities 71%</div>
+      </div>
+      <div style="text-align:center;">
+        <div style="height:8px; background:#22c55e; border-radius:4px; margin-bottom:4px;"></div>
+        <div style="font-size:0.6rem; color:var(--text-muted);">Infrastructure 85%</div>
+      </div>
+      <div style="text-align:center;">
+        <div style="height:8px; background:linear-gradient(to right, #22c55e 30%, #e5e7eb 30%); border-radius:4px; margin-bottom:4px;"></div>
+        <div style="font-size:0.6rem; color:var(--text-muted);">Trust Data 30%</div>
+      </div>
+      <div style="text-align:center;">
+        <div style="height:8px; background:linear-gradient(to right, #f59e0b 10%, #e5e7eb 10%); border-radius:4px; margin-bottom:4px;"></div>
+        <div style="font-size:0.6rem; color:var(--text-muted);">God Mode Eng 10%</div>
+      </div>
+      <div style="text-align:center;">
+        <div style="height:8px; background:linear-gradient(to right, #ef4444 5%, #e5e7eb 5%); border-radius:4px; margin-bottom:4px;"></div>
+        <div style="font-size:0.6rem; color:var(--text-muted);">Autonomous 5%</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SECTION: SIMULATION -->
+<div class="section" id="section-simulation">
+  <h2 class="section-title">Live Sweep Simulation</h2>
+  <p class="section-desc">Watch what happens when "Agent MV" is invoked. This simulates the actual orchestration flow.</p>
+
+  <div class="sim-container">
+    <div class="sim-header">
+      <h3>Terminal — Agent MV Sweep</h3>
+      <div class="sim-controls">
+        <button class="sim-btn active" onclick="startSimulation('morning')">Morning Sweep</button>
+        <button class="sim-btn" onclick="startSimulation('ondemand')">On-Demand</button>
+        <button class="sim-btn" onclick="startSimulation('council')">Council Mode</button>
+        <button class="sim-btn" onclick="startSimulation('selflearn')">Self-Learning</button>
+      </div>
+    </div>
+    <div class="sim-log" id="simLog"></div>
+  </div>
+</div>
+
+<!-- SECTION: VALUE -->
+<div class="section" id="section-value">
+  <h2 class="section-title">Value Delivered</h2>
+  <p class="section-desc">How Agent MV amplifies PM productivity and decision quality.</p>
+
+  <div class="value-grid">
+    <div class="value-card">
+      <div class="value-icon">⏱️</div>
+      <h3>Time Reclaimed</h3>
+      <div class="value-metric">~2hrs</div>
+      <div class="value-metric-label">saved per day on triage</div>
+      <p>Slack scanning, email classification, meeting prep, and GUS tracking — automated from manual to draft-ready.</p>
+    </div>
+    <div class="value-card">
+      <div class="value-icon">🎯</div>
+      <h3>Zero Missed Signals</h3>
+      <div class="value-metric">139</div>
+      <div class="value-metric-label">GTA150 accounts monitored</div>
+      <p>SLA violations, customer escalations, and strategic account activity — caught within minutes during working hours.</p>
+    </div>
+    <div class="value-card">
+      <div class="value-icon">📊</div>
+      <h3>Data-First Responses</h3>
+      <div class="value-metric">100%</div>
+      <div class="value-metric-label">metric-backed drafts</div>
+      <p>Every customer-facing draft pulls verified numbers from Argus/UIP/GUS before composing. No qualitative hand-waving.</p>
+    </div>
+    <div class="value-card">
+      <div class="value-icon">🧭</div>
+      <h3>V2MOM Alignment</h3>
+      <div class="value-metric">Every</div>
+      <div class="value-metric-label">action traced to measure</div>
+      <p>Meeting action items, PRD features, customer asks — all traced back to V2MOM measures automatically.</p>
+    </div>
+    <div class="value-card">
+      <div class="value-icon">📝</div>
+      <h3>Artifact Production</h3>
+      <div class="value-metric">10-step</div>
+      <div class="value-metric-label">evidence-gated PDLC chain</div>
+      <p>From /discover through PRD, prototype, demo script, blog, release notes — each step validated before advancing.</p>
+    </div>
+    <div class="value-card">
+      <div class="value-icon">🧠</div>
+      <h3>Strategic Counsel</h3>
+      <div class="value-metric">6+7+5</div>
+      <div class="value-metric-label">advisor voices on-demand</div>
+      <p>LLM Council (6 PM perspectives), Product Counsel (7 Salesforce narratives), Personal Council (5 leadership voices) — pressure-tested decisions.</p>
+    </div>
+  </div>
+
+  <!-- New Value Items -->
+  <div style="margin-top:32px; display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); gap:16px;">
+    <div style="background:white; border-radius:12px; padding:20px; box-shadow:0 2px 6px rgba(0,0,0,0.04); border-left:4px solid var(--sf-teal);">
+      <h4 style="font-size:0.9rem; color:var(--sf-navy); margin-bottom:6px;">🔄 Self-Strengthening Loop</h4>
+      <p style="font-size:0.8rem; color:var(--text-muted); line-height:1.5;">Voice samples + reasoning model auto-refine without manual intervention. System improves with every session passively.</p>
+    </div>
+    <div style="background:white; border-radius:12px; padding:20px; box-shadow:0 2px 6px rgba(0,0,0,0.04); border-left:4px solid var(--sf-purple);">
+      <h4 style="font-size:0.9rem; color:var(--sf-navy); margin-bottom:6px;">📦 PM² Framework Created</h4>
+      <p style="font-size:0.8rem; color:var(--text-muted); line-height:1.5;">Shareable with any PM via <code>/pm-agent-setup</code>. PM managing PM-agents = exponential output.</p>
+    </div>
+    <div style="background:white; border-radius:12px; padding:20px; box-shadow:0 2px 6px rgba(0,0,0,0.04); border-left:4px solid var(--sf-orange);">
+      <h4 style="font-size:0.9rem; color:var(--sf-navy); margin-bottom:6px;">🎤 AI Camp APAC Pitched</h4>
+      <p style="font-size:0.8rem; color:var(--text-muted); line-height:1.5;">1-hour live demo slot requested — showcasing PM² framework and Agent MV architecture in action.</p>
+    </div>
+  </div>
+
+  <!-- Impact Evidence CTA -->
+  <div style="margin-top:24px; text-align:center;">
+    <a href="https://git.soma.salesforce.com/pages/mayuresh-verma/pm-work/.agents/artifacts/3x-initiative/agent-mv-time-savings-dashboard.html"
+       target="_blank"
+       style="display:inline-flex; align-items:center; gap:10px; background:linear-gradient(135deg, var(--sf-blue), var(--sf-purple)); color:white; text-decoration:none; padding:16px 32px; border-radius:12px; font-size:1rem; font-weight:600; box-shadow:0 4px 12px rgba(1,118,211,0.3); transition:transform 0.2s, box-shadow 0.2s;"
+       onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 20px rgba(1,118,211,0.4)'"
+       onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(1,118,211,0.3)'">
+      <span style="font-size:1.3rem;">📊</span>
+      See Impact Evidence — 78% Admin Time Reduction
+      <span style="font-size:1.1rem;">→</span>
+    </a>
+    <p style="margin-top:8px; font-size:0.8rem; color:var(--text-muted);">Sprint 5a data · Code Duplication epic · 5-tab interactive dashboard</p>
+  </div>
+
+  <div style="margin-top:48px; background:linear-gradient(135deg, #f0f4ff, #f5f0ff); border-radius:16px; padding:32px; text-align:center;">
+    <h3 style="color:var(--sf-navy); margin-bottom:16px;">The Compound Effect</h3>
+    <p style="color:var(--text-muted); font-size:1rem; line-height:1.8; max-width:700px; margin:0 auto;">
+      Agent MV doesn't replace PM judgment — it <strong>multiplies</strong> it.<br>
+      Every draft carries Mayuresh's voice patterns (10 reference samples + 7 learned corrections).<br>
+      Every decision proposal traces to V2MOM measures.<br>
+      Every customer response is backed by verified data.<br>
+      The system gets smarter with every review cycle via the self-strengthening loop — no manual commands needed.
+    </p>
+  </div>
+</div>
+
+<!-- SECTION: EVOLUTION TIMELINE -->
+<div class="section" id="section-evolution">
+<div style="max-width:900px; margin:0 auto; padding:0;">
+  <div style="text-align:center; margin-bottom:32px;">
+    <h2 style="color:var(--sf-navy); font-size:1.5rem; font-weight:700; margin-bottom:8px;">Continuous Evolution</h2>
+    <p style="color:var(--text-muted); font-size:0.9rem;">Agent MV is a living system — growing smarter, broader, and more connected with each phase.</p>
+  </div>
+
+  <div style="position:relative; padding-left:32px;">
+    <!-- Timeline line -->
+    <div style="position:absolute; left:12px; top:0; bottom:0; width:3px; background:linear-gradient(to bottom, var(--sf-orange), var(--sf-blue), var(--sf-purple), var(--sf-green)); border-radius:3px;"></div>
+
+    <!-- Phase 3 — Current -->
+    <div style="position:relative; margin-bottom:32px; background:white; border-radius:12px; padding:20px 24px; box-shadow:0 2px 8px rgba(0,0,0,0.06); border-left:4px solid var(--sf-orange);">
+      <div style="position:absolute; left:-28px; top:22px; width:14px; height:14px; background:var(--sf-orange); border-radius:50%; border:3px solid white; box-shadow:0 0 0 2px var(--sf-orange);"></div>
+      <div style="display:flex; align-items:center; gap:10px; margin-bottom:8px;">
+        <span style="font-size:0.7rem; font-weight:700; background:var(--sf-orange); color:white; padding:2px 8px; border-radius:4px;">CURRENT</span>
+        <span style="font-size:0.85rem; font-weight:600; color:var(--sf-navy);">Phase 3 — Intelligence & Shared Context</span>
+        <span style="font-size:0.75rem; color:var(--text-muted);">May 2026</span>
+      </div>
+      <ul style="font-size:0.8rem; color:var(--text-muted); line-height:2; list-style:none; padding:0;">
+        <li>+ <strong>Legal Counsel Agent</strong> — 4-mode legal compliance (Precedent Bypass as primary strategy)</li>
+        <li>+ <strong>Innovation Lab Agent</strong> — cross-agent pattern mining for novel ideas + productization</li>
+        <li>+ <strong>Jarvis Protocol</strong> — shared real-time context layer (active-context.json + Pre-Read + Post-Write)</li>
+        <li>+ <strong>2 new chains</strong> — legal_compliance + innovation_lab (total: 10 chains)</li>
+        <li>+ <strong>Legal Consent Library</strong> — precedent bypass cache with 6 identical + 2 partial precedents</li>
+        <li>= <strong>22 agents</strong> · <strong>64 capabilities</strong> · <strong>Shared awareness across all specialists</strong></li>
+      </ul>
+    </div>
+
+    <!-- Phase 2 -->
+    <div style="position:relative; margin-bottom:32px; background:white; border-radius:12px; padding:20px 24px; box-shadow:0 2px 8px rgba(0,0,0,0.06); border-left:4px solid var(--sf-blue);">
+      <div style="position:absolute; left:-28px; top:22px; width:14px; height:14px; background:var(--sf-blue); border-radius:50%; border:3px solid white; box-shadow:0 0 0 2px var(--sf-blue);"></div>
+      <div style="display:flex; align-items:center; gap:10px; margin-bottom:8px;">
+        <span style="font-size:0.85rem; font-weight:600; color:var(--sf-navy);">Phase 2 — Scale & Production</span>
+        <span style="font-size:0.75rem; color:var(--text-muted);">Apr–May 2026</span>
+      </div>
+      <ul style="font-size:0.8rem; color:var(--text-muted); line-height:2; list-style:none; padding:0;">
+        <li>+ Customer Intel (SLA watcher, account health, escalation playbook)</li>
+        <li>+ External Intel (competitive pulse, product research, strategy canvas)</li>
+        <li>+ Newsletter Producer (standalone: Trino data → HTML → PNG → deploy)</li>
+        <li>+ SLDS2 LWC Prototype (real Lightning Web Components)</li>
+        <li>+ Execution Tracker (7 capabilities: GUS TDs, epics, PRs, pilots, releases)</li>
+        <li>+ Self-Strengthening Layer (4 background processes: session-end, voice, ledger, reasoning)</li>
+        <li>= 20 agents · 55 capabilities · 4x daily sweeps operational</li>
+      </ul>
+    </div>
+
+    <!-- Phase 1 -->
+    <div style="position:relative; margin-bottom:32px; background:white; border-radius:12px; padding:20px 24px; box-shadow:0 2px 8px rgba(0,0,0,0.06); border-left:4px solid var(--sf-purple);">
+      <div style="position:absolute; left:-28px; top:22px; width:14px; height:14px; background:var(--sf-purple); border-radius:50%; border:3px solid white; box-shadow:0 0 0 2px var(--sf-purple);"></div>
+      <div style="display:flex; align-items:center; gap:10px; margin-bottom:8px;">
+        <span style="font-size:0.85rem; font-weight:600; color:var(--sf-navy);">Phase 1 — Foundation</span>
+        <span style="font-size:0.75rem; color:var(--text-muted);">Mar–Apr 2026</span>
+      </div>
+      <ul style="font-size:0.8rem; color:var(--text-muted); line-height:2; list-style:none; padding:0;">
+        <li>+ Lead Orchestrator + Slack Triage + Gmail Responder + Workspace Digest</li>
+        <li>+ Customer Response + Morning Brief + Artifact Producer</li>
+        <li>+ Meeting Ops + Council Runner + V2MOM Traceback</li>
+        <li>+ Trust Ladder (L1 draft-only) + Evidence Gates + Kill Switch</li>
+        <li>= Core team operational · First sweep proving value within days</li>
+      </ul>
+    </div>
+
+    <!-- Origin -->
+    <div style="position:relative; background:white; border-radius:12px; padding:20px 24px; box-shadow:0 2px 8px rgba(0,0,0,0.06); border-left:4px solid var(--sf-green);">
+      <div style="position:absolute; left:-28px; top:22px; width:14px; height:14px; background:var(--sf-green); border-radius:50%; border:3px solid white; box-shadow:0 0 0 2px var(--sf-green);"></div>
+      <div style="display:flex; align-items:center; gap:10px; margin-bottom:8px;">
+        <span style="font-size:0.85rem; font-weight:600; color:var(--sf-navy);">Origin — The PM² Thesis</span>
+        <span style="font-size:0.75rem; color:var(--text-muted);">Mar 2026</span>
+      </div>
+      <p style="font-size:0.8rem; color:var(--text-muted); line-height:1.6;">
+        "What if a PM managed a team of AI agents the way a CEO manages an org?" — The PM² Framework: PM managing PM-agents = exponential output. Started with a single CLAUDE.md and a vision.
+      </p>
+    </div>
+  </div>
+
+  <!-- Next Up -->
+  <div style="margin-top:32px; text-align:center; padding:20px; background:linear-gradient(135deg, #f0f4ff, #fef3c7); border-radius:12px; border:1px dashed var(--sf-orange);">
+    <p style="font-size:0.85rem; color:var(--sf-navy); font-weight:600; margin-bottom:4px;">Next: Phase 3+ (June 2026)</p>
+    <p style="font-size:0.78rem; color:var(--text-muted);">L1 → L2 promotion (first agent) · Cron activation · Predictive meeting prep · Cross-agent routing via informs tags · God Mode evaluation</p>
+  </div>
+</div>
+</div>
+
+<!-- FOOTER -->
+<div class="footer">
+  <p><strong>Agent MV v3.1</strong> — PM² Framework · Built with Claude Code Agent SDK · 22 agents · 65 capabilities · 8 Workflow scripts · 9 chains · Self-strengthening loop · Jarvis Protocol · Multi-agent orchestration</p>
+  <p style="margin-top:4px;">Mayuresh Verma · Product Manager, CodeGuru · Trust & Infra</p>
+  <p style="margin-top:4px; font-size:0.7rem; opacity:0.6;">Updated 2026-06-08 · Single-file HTML · Zero-server · Works offline · Multi-agent Workflow orchestration added · ~48% to God Mode</p>
+</div>
+
+<script>
+// ─── DATA ───
+const agents = [
+  // Lead
+  { id: 'lead', name: 'Lead\nOrchestrator', emoji: '🎭', color: '#032d60', x: 50, y: 3, desc: 'Central orchestrator. Reads capabilities.md at runtime, dispatches specialists based on triggers, manages 10 chain definitions. CWD-preflight detection. Enforces Jarvis Protocol (Pre-Read + Post-Write) on all specialists. Never sends externally.', caps: ['morning_sweep', 'chain orchestration', 'CWD detection', '10 chain definitions', 'jarvis_protocol_enforcement'] },
+  // Group 1 — Parallel sweep (communication)
+  { id: 'slack', name: 'Slack\nTriage', emoji: '🔍', color: '#0176d3', x: 10, y: 18, desc: 'Scans 15+ internal Slack channels — IMs, MPIMs, private channels, allowlisted public. Identifies threads needing response, priority signals.', caps: ['slack_triage', 'priority detection'] },
+  { id: 'customer', name: 'Customer\nResponse', emoji: '🤝', color: '#2e844a', x: 33, y: 18, desc: 'Monitors customer channels (#help-apexguru, #scale-center-support). Cross-references GTA150 accounts (139 orgs). CSM routing. Drafts to customer-drafts/.', caps: ['customer_response', 'gta150_monitor', 'csm_routing'] },
+  { id: 'gmail', name: 'Gmail\nResponder', emoji: '📧', color: '#9050e9', x: 56, y: 18, desc: 'Classifies unread Gmail. Drafts replies for internal-only email. External customer email blocked by policy.', caps: ['gmail_triage'] },
+  { id: 'workspace', name: 'Workspace\nDigest', emoji: '📋', color: '#0b827c', x: 80, y: 18, desc: 'Scans Google Workspace — Docs, Drive, Calendar, Gemini transcripts. Extracts @mentions, shares, comments, action items. Transcript decode resilience.', caps: ['workspace scan', 'transcript decode', '@mention detection'] },
+  // Group 2 — Parallel sweep (intelligence)
+  { id: 'meeting', name: 'Meeting\nOps', emoji: '📅', color: '#fe9339', x: 15, y: 38, desc: 'Pre-meeting briefs (30 min before), Gemini-to-worklog, action item tracker with V2MOM traceback, followup drafts, calendar collision detection. Skips broadcast events + non-human aliases.', caps: ['pre_meeting_brief', 'gemini_notes_to_worklog', 'meeting_action_item_tracker', 'followup_generator', 'meeting_conflict_resolver'] },
+  { id: 'execution', name: 'Execution\nTracker', emoji: '📊', color: '#ea001e', x: 42, y: 38, desc: 'GUS TD delta scan, aging work item nudges (>5d silent), PR review tracker (git.soma + EMU), epic health dashboard with V2MOM cross-ref, pilot progress, worklog compiler, planned release drift.', caps: ['gus_td_tracker', 'aging_work_item_nudge', 'pr_review_tracker', 'epic_health_dashboard', 'customer_pilot_progress_tracker', 'worklog_compiler', 'planned_release_tracker'] },
+  { id: 'intel', name: 'Customer\nIntel', emoji: '🎯', color: '#0b827c', x: 70, y: 38, desc: 'SLA violation watcher (Argus + UIP, working hours live), signature account health (weekly), escalation playbook runner (Playbook #5), customer meeting context loader (90-day deep bundle).', caps: ['sla_violation_watcher', 'signature_account_health', 'customer_escalation_playbook_runner', 'customer_meeting_context_loader'] },
+  // Aggregator
+  { id: 'brief', name: 'Morning\nBrief', emoji: '📰', color: '#032d60', x: 42, y: 55, desc: 'Aggregator. Consumes all 7 specialist outputs → produces 4 deliverables: markdown brief + Slack canvas + DM notification + HTML dashboard. Monday: extended weekly intel section.', caps: ['morning_brief', '4 output destinations'] },
+  // Dashboard + Feedback
+  { id: 'dashboard', name: 'HTML\nDashboard', emoji: '📈', color: '#3b82f6', x: 70, y: 55, desc: 'Generates zero-server single-file HTML dashboard. 5 tabs: Today, Week, Active Work, Ledger, Signals. Phone + laptop + offline resilient. Chart.js CDN with graceful fallback.', caps: ['living_html_dashboard', '5 tabs', 'offline-capable'] },
+  { id: 'feedback', name: 'Feedback\nLoop', emoji: '🔁', color: '#6366f1', x: 90, y: 38, desc: 'Processes Mayuresh\'s edits to the Agent MV Slack canvas. Diffs against proposed recommendations. Writes per-item outcomes to draft-quality-ledger.md. Surfaces voice/style refinements.', caps: ['canvas_edit_parse', 'ledger_update', 'voice_refinement'] },
+  // On-demand — Artifact PDLC
+  { id: 'artifact', name: 'Artifact\nProducer', emoji: '🏗️', color: '#9050e9', x: 8, y: 62, desc: 'Owns the full PDLC chain (10 steps, 5 evidence gates): /discover, /prd-iterate, /prd-to-prototype, /one-pager, /blog-draft, /release-note, /demo-script, /metrics-dashboard, /prototype-deploy. Innovation360 pattern.', caps: ['discover', 'prd_iterate', 'prd_to_ux_prototype', 'one_pager', 'blog_draft', 'release_note', 'demo_script', 'metrics_dashboard', 'prototype_deploy'] },
+  // On-demand — External Intel
+  { id: 'external', name: 'External\nIntel', emoji: '🌐', color: '#fe9339', x: 30, y: 72, desc: 'Competitive pulse (10 named competitors, daily web scan), product research (6-step deep-dive with bias detection), market intel brief (weekly Monday), customer signals synthesizer (theme-level). Never auto-publishes.', caps: ['competitive_pulse', 'product_research', 'strategy_canvas_html', 'market_intel_brief', 'customer_signals_synthesizer'] },
+  // On-demand — Council (multi-variant)
+  { id: 'council', name: 'Council\nRunner', emoji: '🧠', color: '#032d60', x: 55, y: 72, desc: 'Multi-variant strategic counsel: LLM Council (6 PM advisors, Karpathy methodology), Product Counsel (7 Salesforce narrative voices), Personal Council (5 leadership voices — PRIVATE). 10th-man peer review built into every run. Decision Extractor auto-spawns.', caps: ['council_mode', 'product_counsel', 'personal_council', 'pressure_test', 'decision_extractor', '10th_man_review'] },
+  // On-demand — Legal Counsel (NEW Phase 3)
+  { id: 'legal', name: 'Legal\nCounsel', emoji: '⚖️', color: '#d97706', x: 42, y: 62, desc: 'Legal compliance specialist. 4 modes: Proactive Scan (/legal-check), Reactive Q&A (/legal-solve), Precedent Bypass (/legal-bypass — the power move: map mechanic → search precedent → skip business case entirely), Business Case Builder (/legal-case — LAST RESORT). Also: PLR tracker, consent library curator, legal benchmark, subprocessor monitor. Reads MSA/SPARC/Infrastructure docs.', caps: ['legal_check', 'legal_solve', 'legal_bypass_precedent', 'legal_case_builder', 'plr_tracker', 'consent_library', 'legal_benchmark', 'subprocessor_monitor'] },
+  // On-demand — Innovation Lab (NEW Phase 3)
+  { id: 'innovation', name: 'Innovation\nLab', emoji: '💡', color: '#7c3aed', x: 68, y: 62, desc: 'Novel idea generation from cross-agent pattern mining. 5 capabilities: /innovation-scan (mine patterns from slack-triage, customer-response, execution-tracker, external-intel), /idea-spark (generate novel productivity/product ideas), /self-improve (propose Agent MV architecture improvements), /productize (identify features hiding in PM workflows), /experiment-design (structure low-cost experiments to validate ideas).', caps: ['innovation_scan', 'idea_spark', 'self_improve', 'productize', 'experiment_design'] },
+  // On-demand — V2MOM
+  { id: 'v2mom', name: 'V2MOM\nTraceback', emoji: '🧭', color: '#14b8a6', x: 80, y: 72, desc: 'Read-only matcher: maps action items, PRD lines, customer asks to V2MOM measures (M1-M8). Spawned by meeting-ops (>10 items) and artifact-producer (/discover). Ensures nothing is built without strategy link.', caps: ['v2mom_traceback', 'measure_matching'] },
+  // On-demand — Basecamp
+  { id: 'basecamp', name: 'Basecamp\nV2MOM Reader', emoji: '🔄', color: '#64748b', x: 8, y: 82, desc: 'On-demand Playwright scraper. Invokes browser automation to pull authoritative V2MOM data from Basecamp (auth-gated). Rewrites markdown + JSON cache. Read-only on Basecamp forever.', caps: ['basecamp_v2mom_refresh', 'playwright_scraper'] },
+  // Sub-specialists (spawned by parents)
+  { id: 'account_dash', name: 'Account\nDashboard', emoji: '🏦', color: '#0d9488', x: 30, y: 86, desc: 'Sub-specialist spawned by customer-intel. Generates per-account HTML health dashboard (5 tabs). Zero-server, works offline. CTS figures cite Argus query. Mayuresh-only.', caps: ['per_account_html_health', '5 tabs per account'] },
+  { id: 'strategy_canvas', name: 'Strategy\nCanvas', emoji: '🗺️', color: '#f59e0b', x: 55, y: 86, desc: 'Sub-specialist spawned by external-intel. Per-product strategy-canvas HTML (6 tabs: Overview, Strategy Canvas scatter, Competitors, Market, Signals Feed, White Space Monitor). Aditya pattern.', caps: ['strategy_canvas_html', '6 tabs per product'] },
+  { id: 'slds2', name: 'SLDS2 LWC\nPrototype', emoji: '⚡', color: '#7c3aed', x: 80, y: 86, desc: 'Builds Salesforce-native prototypes using real LWC + SLDS2 styles + 85+ lightning-base-components. 100% design-system compliant. Reviewable by UX without Figma. Copy-paste-proximate to production.', caps: ['slds2_lwc_prototype', '85+ components'] },
+  // Standalone specialist — Newsletter
+  { id: 'newsletter', name: 'Newsletter\nProducer', emoji: '📰', color: '#d946ef', x: 8, y: 72, desc: 'Standalone specialist (NOT under artifact-producer). Owns full quarterly newsletter lifecycle: UIP/Trino data pull → per-product section draft → HTML infographic generation → Playwright PNG export → format selection (Slack canvas / HTML / both) → git deploy → review routing. Standing directives from Sri: customer names prominent, unified cross-product view.', caps: ['newsletter_production', 'trino_data_pull', 'html_infographic_gen', 'playwright_png_export', 'git_deploy', 'review_routing'] },
+  // Self-Strengthening Layer (Background)
+  { id: 'session_end', name: 'Session-End\nHook', emoji: '📸', color: '#0b827c', x: 15, y: 96, desc: 'Event-driven (not scheduled). Fires on every session close. Captures decisions, corrections, and voice patterns to memory/*.jsonl. Auto-write — no approval needed.', caps: ['session_end_capture', 'decisions.jsonl auto-write'] },
+  { id: 'voice_harvest', name: 'Voice\nHarvester', emoji: '🎙️', color: '#0b827c', x: 38, y: 96, desc: 'Daily 18:30 IST. Diffs sent messages against drafts to learn voice patterns. Proposes new voice samples to voice-samples-proposed.md (propose-only, never auto-writes markdown).', caps: ['voice_harvest', 'voice-samples-proposed.md'] },
+  { id: 'ledger_detect', name: 'Passive Ledger\nAuto-Detect', emoji: '📊', color: '#0b827c', x: 61, y: 96, desc: 'Daily background. Diffs drafts vs sends automatically. Populates draft-quality-ledger without manual "ledger:" commands. Feeds L1→L2 promotion data passively.', caps: ['ledger_auto_detect', 'draft-quality-ledger.md'] },
+  { id: 'reasoning_update', name: 'Reasoning\nUpdater', emoji: '🧬', color: '#0b827c', x: 84, y: 96, desc: 'Weekly (Sundays). Analyzes decision patterns across the week. Proposes reasoning refinements (e.g., "defer to GK on architecture 4/4 times"). Propose-only — never auto-modifies reasoning model.', caps: ['reasoning_model_update', 'pattern_detection'] },
+];
+
+const connections = [
+  // Lead → Group 1 (parallel)
+  { from: 'lead', to: 'slack' }, { from: 'lead', to: 'customer' }, { from: 'lead', to: 'gmail' }, { from: 'lead', to: 'workspace' },
+  // Lead → Group 2 (parallel, depends on workspace-digest)
+  { from: 'lead', to: 'meeting' }, { from: 'lead', to: 'execution' }, { from: 'lead', to: 'intel' },
+  // Workspace feeds meeting-ops (calendar data)
+  { from: 'workspace', to: 'meeting' },
+  // Meeting-ops cross-spawns customer-intel for customer meetings
+  { from: 'meeting', to: 'intel' },
+  // All Group 1+2 feed into Morning Brief
+  { from: 'slack', to: 'brief' }, { from: 'customer', to: 'brief' }, { from: 'gmail', to: 'brief' },
+  { from: 'workspace', to: 'brief' }, { from: 'meeting', to: 'brief' }, { from: 'execution', to: 'brief' }, { from: 'intel', to: 'brief' },
+  // Morning Brief → Dashboard
+  { from: 'brief', to: 'dashboard' },
+  // Lead → On-demand specialists
+  { from: 'lead', to: 'artifact' }, { from: 'lead', to: 'external' }, { from: 'lead', to: 'council' },
+  { from: 'lead', to: 'v2mom' }, { from: 'lead', to: 'basecamp' }, { from: 'lead', to: 'feedback' },
+  { from: 'lead', to: 'legal' }, { from: 'lead', to: 'innovation' },
+  // Legal reads from customer-response + execution-tracker
+  { from: 'customer', to: 'legal' }, { from: 'execution', to: 'legal' },
+  // Innovation reads from 4 sibling specialists
+  { from: 'slack', to: 'innovation' }, { from: 'customer', to: 'innovation' }, { from: 'execution', to: 'innovation' }, { from: 'external', to: 'innovation' },
+  // Standalone specialist
+  { from: 'lead', to: 'newsletter' },
+  // Sub-specialist spawning
+  { from: 'intel', to: 'account_dash' },
+  { from: 'external', to: 'strategy_canvas' },
+  { from: 'artifact', to: 'slds2' },
+  // V2MOM traceback serves multiple parents
+  { from: 'meeting', to: 'v2mom' }, { from: 'artifact', to: 'v2mom' },
+  // Council auto-spawns decision extractor (internal)
+  { from: 'council', to: 'v2mom' },
+  // Self-Strengthening Layer (background, independent of sweep)
+  { from: 'feedback', to: 'voice_harvest' },
+  { from: 'feedback', to: 'ledger_detect' },
+  { from: 'session_end', to: 'reasoning_update' },
+];
+
+const capabilities = [
+  { name: 'Slack Triage', emoji: '🔍', desc: 'Scan internal Slack for mentions/threads needing response', type: 'sweep' },
+  { name: 'Customer Response', emoji: '🤝', desc: 'Scan customer channels + GTA150 + draft replies', type: 'sweep' },
+  { name: 'Gmail Triage', emoji: '📧', desc: 'Classify unread Gmail, draft internal replies', type: 'sweep' },
+  { name: 'Morning Brief', emoji: '📰', desc: 'Aggregate all specialist outputs into coherent brief', type: 'sweep' },
+  { name: 'GTA150 Monitor', emoji: '🏢', desc: 'Cross-reference strategic accounts × signals', type: 'sweep' },
+  { name: 'Dashboard Lookup', emoji: '📈', desc: 'Answer metrics questions from verified KB', type: 'sweep' },
+  { name: 'CSM Routing', emoji: '🗺️', desc: 'Resolve org_id → CSM/Account Owner', type: 'sweep' },
+  { name: 'Pre-Meeting Brief', emoji: '📅', desc: '30-min-before context brief for calendar events', type: 'sweep' },
+  { name: 'Gemini → Worklog', emoji: '🎙️', desc: 'Parse transcripts → structured worklog entries', type: 'sweep' },
+  { name: 'Action Item Tracker', emoji: '✅', desc: 'Rolling tracker with V2MOM traceback + aging flags', type: 'sweep' },
+  { name: 'Followup Generator', emoji: '✉️', desc: 'Post-meeting followup messages (decisions + next steps)', type: 'sweep' },
+  { name: 'Conflict Resolver', emoji: '⚡', desc: 'Detect overlapping meetings, score + draft decline', type: 'sweep' },
+  { name: 'V2MOM Traceback', emoji: '🧭', desc: 'Map action items → V2MOM measures', type: 'sweep' },
+  { name: 'HTML Dashboard', emoji: '📊', desc: 'Living 5-tab dashboard (phone + laptop + offline)', type: 'sweep' },
+  { name: 'GUS TD Tracker', emoji: '🎫', desc: 'Daily delta scan on TDs filed/downstream', type: 'sweep' },
+  { name: 'Aging Work Nudge', emoji: '⏰', desc: 'Draft nudges for items silent >5 days', type: 'sweep' },
+  { name: 'PR Review Tracker', emoji: '🔀', desc: 'git.soma + EMU PRs awaiting/stuck', type: 'sweep' },
+  { name: 'Epic Health', emoji: '🏥', desc: 'Per-epic status with V2MOM cross-ref + health score', type: 'sweep' },
+  { name: 'Pilot Progress', emoji: '🚀', desc: 'Named pilot milestones (Bajaj, IDFC, etc.)', type: 'sweep' },
+  { name: 'Worklog Compiler', emoji: '📓', desc: 'End-of-day activity roll-up', type: 'sweep' },
+  { name: 'SLA Violation Watcher', emoji: '🚨', desc: 'Argus + UIP scan for GTA150 SLA breaches', type: 'sweep' },
+  { name: 'Signature Account Health', emoji: '💎', desc: 'Weekly per-account snapshot for top accounts', type: 'weekly' },
+  { name: 'Escalation Playbook', emoji: '🆘', desc: 'Run Playbook #5 on detected escalation signals', type: 'sweep' },
+  { name: 'Customer Meeting Context', emoji: '📋', desc: 'Deep context bundle for customer meetings', type: 'ondemand' },
+  { name: 'Account Dashboard', emoji: '🏦', desc: 'Per-account HTML health dashboard (5 tabs)', type: 'ondemand' },
+  { name: '/discover', emoji: '🔬', desc: 'Front-gate PDLC — evidence score + V2MOM + RICE', type: 'chain' },
+  { name: '/prd-iterate', emoji: '📝', desc: 'Delta-apply on existing PRD (gated on evidence)', type: 'chain' },
+  { name: '/prd-to-prototype', emoji: '🎨', desc: 'UX-first interactive prototype from PRD', type: 'chain' },
+  { name: '/one-pager', emoji: '📄', desc: 'Problem → What → Outcome → Next', type: 'ondemand' },
+  { name: '/demo-script', emoji: '🎬', desc: 'TTS narration script + helper commands', type: 'ondemand' },
+  { name: '/blog-draft', emoji: '✍️', desc: 'developer.salesforce.com markdown (evidence-gated)', type: 'chain' },
+  { name: '/release-note', emoji: '🏷️', desc: 'Customer-facing per-release notes', type: 'chain' },
+  { name: '/metrics-dashboard', emoji: '📉', desc: 'Per-feature HTML adoption/wins/CTS dashboard', type: 'ondemand' },
+  { name: '/newsletter-draft', emoji: '📰', desc: 'Quarterly Scalability Pulse newsletter (routes to standalone newsletter-producer)', type: 'ondemand' },
+  { name: 'Competitive Pulse', emoji: '🕵️', desc: 'Daily web scan for competitor moves (10 named)', type: 'ondemand' },
+  { name: 'Product Research', emoji: '🔎', desc: 'Deep-dive evidence-based competitive analysis', type: 'ondemand' },
+  { name: 'Strategy Canvas', emoji: '🗺️', desc: 'Per-product HTML strategy dashboard (6 tabs)', type: 'ondemand' },
+  { name: 'Market Intel Brief', emoji: '📊', desc: 'Weekly: 5 competitor + 5 customer + 1 strategic', type: 'weekly' },
+  { name: 'Customer Signals', emoji: '📡', desc: 'Theme-level cross-account synthesis', type: 'ondemand' },
+  { name: 'V2MOM Refresh', emoji: '🔄', desc: 'Playwright scraper → Basecamp → cache rewrite', type: 'ondemand' },
+  { name: 'LLM Council', emoji: '🧠', desc: '6-advisor PM council (Enterprise, Platform, DX, Growth, Monetization, Execution) — Karpathy methodology', type: 'ondemand' },
+  { name: '10th-Man Review', emoji: '🔟', desc: 'Each advisor argues AGAINST their own position — built into every council run to surface blind spots', type: 'ondemand' },
+  { name: 'Product Counsel', emoji: '🏛️', desc: '7-voice Salesforce narrative council (CEO Vision, Trust, Eng Results, Customer Success, Trailblazer, Competitive, Ohana)', type: 'ondemand' },
+  { name: 'Personal Council', emoji: '👤', desc: '5-voice leadership simulation (PRIVATE prep material — never shared, never attributed)', type: 'ondemand' },
+  { name: 'Pressure Test', emoji: '🔥', desc: 'Auto-council high-stakes drafts before send — picks variant by topic, surfaces go/no-go/revise', type: 'ondemand' },
+  { name: 'Decision Extractor', emoji: '⚖️', desc: 'Scan councils/worklogs for implicit decisions → propose PM_Decisions.md entries with tradeoffs + reversibility', type: 'ondemand' },
+  { name: 'Planned Release', emoji: '📦', desc: 'Weekly CodeGuru release roll-up + drift detection (new/slipped/completed epics vs last week)', type: 'weekly' },
+  { name: 'Product Research', emoji: '🔎', desc: '6-step deep-dive competitive analysis: Landscape → Features → Evidence Assessment → Honest Self-Assessment → Gap Analysis → Opportunities', type: 'ondemand' },
+  { name: 'SLDS2 LWC Prototype', emoji: '⚡', desc: 'Real LWC + real SLDS2 styles + 85+ lightning-base-components. Salesforce UX-reviewable without Figma.', type: 'ondemand' },
+  { name: 'Newsletter Production', emoji: '📰', desc: 'Standalone: quarterly Scalability Products newsletter — Trino data → draft → HTML infographic → Playwright PNG → format selection → git deploy → review', type: 'ondemand' },
+  { name: 'Identity Canvas', emoji: '🪪', desc: 'Public Slack canvas with setup guide + 50 capabilities + trust ladder + tech stack', type: 'ondemand' },
+  { name: 'Feedback Loop', emoji: '🔁', desc: 'Process canvas edits → diff vs proposed → lessons.jsonl → voice/style corrections', type: 'ondemand' },
+  { name: 'Chain Orchestrator', emoji: '🔗', desc: 'Meta: 10 chains (morning_sweep, new_feature_pdlc, customer_meeting_prep, feedback_loop, v2mom_refresh, weekly_intel_cycle, artifact_iteration, council_run, legal_compliance, innovation_lab)', type: 'chain' },
+  // Legal Compliance (NEW Phase 3)
+  { name: '/legal-check', emoji: '⚖️', desc: 'Proactive scan: detect consent/compliance gaps in active threads, PRDs, customer asks before they become blockers', type: 'ondemand' },
+  { name: '/legal-solve', emoji: '📜', desc: 'Reactive Q&A: answer legal questions using MSA/SPARC/Infrastructure docs + precedent library', type: 'ondemand' },
+  { name: '/legal-bypass', emoji: '🛡️', desc: 'Precedent Bypass (the power move): map mechanic → search for identical prior approval → use as shield to skip business case', type: 'ondemand' },
+  { name: '/legal-case', emoji: '📋', desc: 'Business Case Builder (LAST RESORT): full 7-section case when no precedent exists', type: 'ondemand' },
+  { name: 'PLR Tracker', emoji: '📑', desc: 'Track Product Legal Review filings across GUS — status, aging, blockers', type: 'ondemand' },
+  { name: 'Consent Library', emoji: '📚', desc: 'Curate approved consent text variants + precedent bypass library by mechanic', type: 'ondemand' },
+  { name: 'Subprocessor Monitor', emoji: '🔍', desc: 'Monitor LLM subprocessor changes (OpenAI/Azure/Google/AWS) for compliance impact', type: 'ondemand' },
+  // Innovation Lab (NEW Phase 3)
+  { name: '/innovation-scan', emoji: '💡', desc: 'Mine patterns from 4 sibling specialists (slack, customer, execution, external) for novel ideas', type: 'ondemand' },
+  { name: '/idea-spark', emoji: '✨', desc: 'Generate novel ideas for productivity, workflows, or productization from cross-agent patterns', type: 'ondemand' },
+  { name: '/self-improve', emoji: '🔧', desc: 'Propose Agent MV architecture improvements based on observed friction and gaps', type: 'ondemand' },
+  { name: '/productize', emoji: '📦', desc: 'Identify features hiding in PM workflows that could become product capabilities', type: 'ondemand' },
+  { name: '/experiment-design', emoji: '🧪', desc: 'Structure low-cost experiments to validate ideas before full investment', type: 'ondemand' },
+  // Self-Strengthening (Background)
+  { name: 'Auto-Enrichment Loop', emoji: '🔄', desc: 'C8.6 — Orchestrates the 4 self-strengthening processes. JSONL auto-write, markdown propose-only. Weekly human review gate.', type: 'background' },
+  { name: 'Voice Harvester', emoji: '🎙️', desc: 'C1.9 — Daily 18:30 IST. Diffs sent messages vs drafts to learn voice patterns. Proposes new samples to voice-samples-proposed.md.', type: 'background' },
+  { name: 'Session-End Auto-Capture', emoji: '📸', desc: 'C1.10 — Event-driven (every session close). Captures decisions, corrections, and patterns to memory/*.jsonl automatically.', type: 'background' },
+  { name: 'Reasoning Model Refinement', emoji: '🧬', desc: 'C1.11 — Weekly (Sundays). Detects behavioral patterns and proposes reasoning model refinements. Propose-only.', type: 'background' },
+];
+
+// ─── NAVIGATION ───
+function showSection(id) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('section-' + id).classList.add('active');
+  event.target.classList.add('active');
+
+  if (id === 'architecture') renderArchitecture();
+  if (id === 'simulation') startSimulation('morning');
+}
+
+// ─── ARCHITECTURE RENDERING ───
+function renderArchitecture() {
+  const canvas = document.getElementById('archCanvas');
+  const svg = document.getElementById('connectionsSvg');
+
+  // Clear existing nodes (not SVG)
+  canvas.querySelectorAll('.agent-node').forEach(n => n.remove());
+  svg.innerHTML = '';
+
+  const w = canvas.offsetWidth;
+  const h = canvas.offsetHeight;
+
+  // Render nodes
+  agents.forEach(agent => {
+    const node = document.createElement('div');
+    node.className = 'agent-node';
+    node.style.left = (agent.x / 100 * w - 70) + 'px';
+    node.style.top = (agent.y / 100 * h) + 'px';
+    node.innerHTML = `
+      <div class="agent-icon" style="background:${agent.color}20; border-color:${agent.color};">
+        ${agent.emoji}
+      </div>
+      <div class="agent-name">${agent.name.replace('\n', '<br>')}</div>
+      <div class="agent-level">L1 Draft-Only</div>
+    `;
+    node.onclick = () => showAgentDetail(agent);
+    canvas.appendChild(node);
+  });
+
+  // Render connections
+  agents.forEach(agent => {
+    agent._cx = agent.x / 100 * w;
+    agent._cy = agent.y / 100 * h + 30;
+  });
+
+  connections.forEach(conn => {
+    const from = agents.find(a => a.id === conn.from);
+    const to = agents.find(a => a.id === conn.to);
+    if (!from || !to) return;
+
+    const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+    line.setAttribute('x1', from._cx);
+    line.setAttribute('y1', from._cy);
+    line.setAttribute('x2', to._cx);
+    line.setAttribute('y2', to._cy);
+    line.setAttribute('class', 'connection-line active');
+    svg.appendChild(line);
+  });
+}
+
+function showAgentDetail(agent) {
+  const detail = document.getElementById('agentDetail');
+  detail.style.display = 'block';
+  document.getElementById('detailName').textContent = agent.name.replace('\n', ' ') + ' ' + agent.emoji;
+  document.getElementById('detailDesc').textContent = agent.desc;
+  document.getElementById('detailCaps').innerHTML = agent.caps.map(c =>
+    `<span class="agent-badge" style="margin:2px;">${c}</span>`
+  ).join('');
+}
+
+// ─── CAPABILITIES GRID ───
+function renderCapabilities(filter = 'all') {
+  const grid = document.getElementById('capGrid');
+  const filtered = filter === 'all' ? capabilities : capabilities.filter(c => c.type === filter);
+
+  grid.innerHTML = filtered.map(cap => `
+    <div class="cap-card" data-type="${cap.type}">
+      <div class="cap-card-header">
+        <span class="cap-emoji">${cap.emoji}</span>
+        <h4>${cap.name}</h4>
+      </div>
+      <p>${cap.desc}</p>
+      <span class="cap-tag ${cap.type}">${cap.type === 'sweep' ? '⚡ Daily Sweep' : cap.type === 'ondemand' ? '🎯 On-Demand' : cap.type === 'weekly' ? '📅 Weekly' : cap.type === 'background' ? '🔄 Self-Strengthening' : '🔗 PDLC Chain'}</span>
+    </div>
+  `).join('');
+}
+
+function filterCaps(type) {
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  event.target.classList.add('active');
+  renderCapabilities(type);
+}
+
+// ─── SIMULATION ───
+const simScripts = {
+  morning: [
+    { time: '07:00:01', agent: 'Lead', action: 'CWD check passed', result: '~/pm-work ✓' },
+    { time: '07:00:01', agent: 'Lead', action: 'Reading capabilities.md', result: '64 capabilities loaded (51 Phase 1-2 + 13 Phase 3)' },
+    { time: '07:00:01', agent: 'Lead', action: '🧿 Jarvis Protocol — Pre-Read active-context.json', result: '2 critical items · 3 pending decisions · sweep_status: ready' },
+    { time: '07:00:02', agent: 'Lead', action: 'Spawning Group 1 (parallel)', result: '4 agents launched' },
+    { time: '07:00:03', agent: 'Slack Triage', action: 'Scanning 15 channels', result: '...' },
+    { time: '07:00:03', agent: 'Customer Response', action: 'Loading GTA150 list (139 accounts)', result: '...' },
+    { time: '07:00:03', agent: 'Gmail Responder', action: 'Searching unread (label:inbox is:unread)', result: '...' },
+    { time: '07:00:03', agent: 'Workspace Digest', action: 'Scanning Calendar + Docs + Drive', result: '...' },
+    { time: '07:00:18', agent: 'Slack Triage', action: 'Complete', result: '3 threads need response, 1 priority signal' },
+    { time: '07:00:22', agent: 'Customer Response', action: 'Complete', result: '2 customer queries detected (1 GTA150)' },
+    { time: '07:00:15', agent: 'Gmail Responder', action: 'Complete', result: '4 emails classified, 1 draft produced' },
+    { time: '07:00:25', agent: 'Workspace Digest', action: 'Complete', result: '2 action items from transcripts, 1 new @mention' },
+    { time: '07:00:26', agent: 'Lead', action: 'Spawning Group 2 (parallel)', result: '3 agents launched' },
+    { time: '07:00:27', agent: 'Meeting Ops', action: 'Loading calendar (next 12h)', result: '...' },
+    { time: '07:00:27', agent: 'Execution Tracker', action: 'Querying GUS (SOQL)', result: '...' },
+    { time: '07:00:27', agent: 'Customer Intel', action: 'Checking Argus SLA metrics', result: '...' },
+    { time: '07:00:35', agent: 'Meeting Ops', action: 'Complete', result: '3 meetings today, 1 pre-brief generated' },
+    { time: '07:00:40', agent: 'Execution Tracker', action: 'Complete', result: '2 TDs updated, 1 aging item, 4 epics tracked' },
+    { time: '07:00:38', agent: 'Customer Intel', action: 'Complete', result: '0 SLA violations (overnight batch clear)' },
+    { time: '07:00:41', agent: 'Lead', action: 'All specialists complete', result: 'Spawning Morning Brief' },
+    { time: '07:00:42', agent: 'Morning Brief', action: 'Aggregating 6 specialist outputs', result: '...' },
+    { time: '07:00:55', agent: 'Morning Brief', action: 'Writing markdown brief', result: '→ artifacts/morning-brief/2026-05-21.md' },
+    { time: '07:00:56', agent: 'Morning Brief', action: 'Updating Slack canvas', result: '→ Canvas F0B... refreshed' },
+    { time: '07:00:57', agent: 'Morning Brief', action: 'Posting DM summary', result: '→ DM to U028L72HS3Z ✓' },
+    { time: '07:00:58', agent: 'Morning Brief', action: 'Generating HTML dashboard', result: '→ dashboard.html refreshed' },
+    { time: '07:00:59', agent: 'Lead', action: '🧿 Jarvis Protocol — Post-Write active-context.json', result: 'Merged: 2 critical + 3 meetings + sweep_status:ok' },
+    { time: '07:01:00', agent: 'Lead', action: '✅ Sweep complete', result: '59 seconds total · 6 drafts · 4 outputs delivered · context synced' },
+  ],
+  ondemand: [
+    { time: '10:15:01', agent: 'Mayuresh', action: '/discover Code Duplication', result: '' },
+    { time: '10:15:02', agent: 'Lead', action: 'Chain: new_feature_pdlc → step 1 (discover)', result: 'Spawning artifact-producer' },
+    { time: '10:15:03', agent: 'Artifact Producer', action: 'Loading customer evidence', result: '...' },
+    { time: '10:15:08', agent: 'Artifact Producer', action: 'Querying UIP for adoption data', result: '99.1% accuracy, 28.3M chars impact' },
+    { time: '10:15:12', agent: 'Artifact Producer', action: 'V2MOM traceback', result: 'Maps to M5 ApexGuru Adoption' },
+    { time: '10:15:18', agent: 'Artifact Producer', action: 'Computing RICE score', result: 'Reach: 10K+ orgs · Impact: High · Confidence: 0.93' },
+    { time: '10:15:20', agent: 'Artifact Producer', action: 'Evidence score: 0.93', result: '✅ Gate passed → /prd-iterate unlocked' },
+    { time: '10:15:21', agent: 'Artifact Producer', action: '✅ /discover complete', result: '→ products/apexguru/features/code-duplication/discover.md' },
+  ],
+  council: [
+    { time: '14:30:01', agent: 'Mayuresh', action: '/council Should we ship Code Security as Phase 1 or bundle with Modernization?', result: '' },
+    { time: '14:30:02', agent: 'Lead', action: 'Chain: council_run → framing', result: 'High-stakes product decision detected' },
+    { time: '14:30:03', agent: 'Council Runner', action: 'Framing question + loading context (PRDs, V2MOM, customer receipts)', result: '...' },
+    { time: '14:30:05', agent: 'Council Runner', action: 'Spawning 6 advisors (parallel)', result: 'Enterprise · Platform · DX · Growth · Monetization · Execution' },
+    { time: '14:30:08', agent: '🏢 Enterprise', action: 'Enterprise buyer lens', result: 'Bundling increases perceived value for security-conscious CIOs...' },
+    { time: '14:30:09', agent: '⚙️ Platform', action: 'Platform architecture lens', result: 'Shared infra argues for bundling but adds 6-week coupling...' },
+    { time: '14:30:10', agent: '💻 DX', action: 'Developer experience lens', result: 'Standalone ships faster iterations to devs who want security NOW...' },
+    { time: '14:30:11', agent: '📈 Growth', action: 'Growth/adoption lens', result: 'Phase 1 standalone = faster feedback loop, faster learning...' },
+    { time: '14:30:12', agent: '💰 Monetization', action: 'Monetization lens', result: 'Bundle ONLY if premium SKU path confirmed. Otherwise standalone.' },
+    { time: '14:30:13', agent: '🎯 Execution', action: 'Execution/timeline lens', result: 'Standalone = 4 weeks faster to pilot. 264 timeline demands it.' },
+    { time: '14:30:16', agent: 'Council Runner', action: '🔟 10th-Man Peer Review — each advisor argues AGAINST their own position', result: '...' },
+    { time: '14:30:18', agent: '🏢→🔟', action: '10th-man challenge to Enterprise', result: 'But: CIOs won\'t wait for bundle — security urgency is NOW' },
+    { time: '14:30:19', agent: '⚙️→🔟', action: '10th-man challenge to Platform', result: 'But: coupling means one slip delays BOTH features' },
+    { time: '14:30:20', agent: '💻→🔟', action: '10th-man challenge to DX', result: 'But: standalone creates tech debt if architectures diverge later' },
+    { time: '14:30:22', agent: 'Council Runner', action: '⚖️ Cross-advisor clash detection', result: 'Enterprise+Growth vs Platform divergence identified' },
+    { time: '14:30:28', agent: 'Council Runner', action: '👨‍⚖️ Chairman synthesis', result: '4 agree (standalone first) · 2 nuanced (bundle if SKU) · 1 blind spot surfaced' },
+    { time: '14:30:30', agent: 'Council Runner', action: '📋 Blind spot surfaced by 10th-man', result: 'Architecture divergence risk if Phase 1 ships without shared schema contract' },
+    { time: '14:30:35', agent: 'Council Runner', action: '✅ Final recommendation', result: 'Ship standalone Phase 1 WITH shared schema contract. Validate with 2 GTA150 orgs.' },
+    { time: '14:30:36', agent: 'Council Runner', action: 'One thing to do first:', result: '"Get 2 security-focused GTA150 orgs to validate standalone value prop"' },
+    { time: '14:30:37', agent: 'Decision Extractor', action: 'Auto-spawned → scanning synthesis', result: '1 decision proposal + 1 blind-spot item generated' },
+    { time: '14:30:38', agent: 'Council Runner', action: '✅ Council complete', result: '→ HTML report + transcript + decision proposal + V2MOM trace' },
+  ],
+  selflearn: [
+    { time: '16:42:01', agent: 'Session-End Hook', action: 'Session close detected', result: 'Triggering auto-capture...' },
+    { time: '16:42:02', agent: 'Session-End Hook', action: 'Scanning session for decisions', result: '2 decisions identified' },
+    { time: '16:42:03', agent: 'Session-End Hook', action: 'Writing to decisions.jsonl', result: '→ "Defer JFR deep-dive to Anand" + "Use Option 4 for Tracer"' },
+    { time: '16:42:04', agent: 'Session-End Hook', action: 'Scanning for voice corrections', result: '1 correction: "crisp" → removed hedging in Daniel reply' },
+    { time: '16:42:05', agent: 'Session-End Hook', action: '✅ Auto-capture complete', result: '→ memory/decisions.jsonl + memory/lessons.jsonl (auto-write)' },
+    { time: '18:30:01', agent: 'Voice Harvester', action: 'EOD trigger fired', result: 'Loading today\'s sent messages...' },
+    { time: '18:30:03', agent: 'Voice Harvester', action: 'Diffing drafts vs sent (8 messages today)', result: '...' },
+    { time: '18:30:06', agent: 'Voice Harvester', action: 'Pattern detected', result: '"Opens with context before ask" — 6/8 messages' },
+    { time: '18:30:08', agent: 'Voice Harvester', action: 'Pattern detected', result: '"Uses bullet-then-context, not context-then-bullet for GK"' },
+    { time: '18:30:10', agent: 'Voice Harvester', action: '✅ Proposing 2 new voice patterns', result: '→ voice-samples-proposed.md (propose-only — awaits review)' },
+    { time: '18:30:11', agent: 'Passive Ledger', action: 'Running draft-vs-send diff', result: '8 drafts sent today, comparing...' },
+    { time: '18:30:14', agent: 'Passive Ledger', action: 'Scored: 6/8 sent as-is, 2/8 minor edits', result: '75% SENT_AS_IS rate today' },
+    { time: '18:30:15', agent: 'Passive Ledger', action: '✅ Ledger auto-populated', result: '→ draft-quality-ledger.md (auto-write)' },
+    { time: 'SUN 02:00', agent: 'Reasoning Updater', action: 'Weekly analysis triggered', result: 'Loading 7 days of decisions + patterns...' },
+    { time: 'SUN 02:01', agent: 'Reasoning Updater', action: 'Analyzing decision patterns', result: '143 decisions this week across 12 sessions' },
+    { time: 'SUN 02:03', agent: 'Reasoning Updater', action: 'Pattern detected', result: '"Deferred to GK on architecture decisions 4/4 times this week"' },
+    { time: 'SUN 02:04', agent: 'Reasoning Updater', action: 'Pattern detected', result: '"Responded same-day to Karishma 100%, Daniel 60% — suggest priority alignment"' },
+    { time: 'SUN 02:05', agent: 'Reasoning Updater', action: '✅ 2 refinements proposed', result: '→ reasoning-refinements-proposed.md (propose-only — Sunday review)' },
+  ]
+};
+
+let simInterval = null;
+
+function startSimulation(type) {
+  document.querySelectorAll('.sim-btn').forEach(b => b.classList.remove('active'));
+  event.target.classList.add('active');
+
+  const log = document.getElementById('simLog');
+  log.innerHTML = '';
+
+  if (simInterval) clearInterval(simInterval);
+
+  const script = simScripts[type];
+  let i = 0;
+
+  simInterval = setInterval(() => {
+    if (i >= script.length) {
+      clearInterval(simInterval);
+      return;
+    }
+
+    const entry = script[i];
+    const line = document.createElement('div');
+    line.className = 'log-line';
+    line.innerHTML = `<span class="log-time">${entry.time}</span> <span class="log-arrow">│</span> <span class="log-agent">${entry.agent}</span> <span class="log-arrow">→</span> <span class="log-action">${entry.action}</span>${entry.result ? ` <span class="log-arrow">→</span> <span class="log-result">${entry.result}</span>` : ''}`;
+    log.appendChild(line);
+    log.scrollTop = log.scrollHeight;
+    i++;
+  }, 400);
+}
+
+// ─── INIT ───
+document.addEventListener('DOMContentLoaded', () => {
+  renderArchitecture();
+  renderCapabilities();
+});
+
+// Re-render architecture on resize
+let resizeTimer;
+window.addEventListener('resize', () => {
+  clearTimeout(resizeTimer);
+  resizeTimer = setTimeout(() => {
+    if (document.getElementById('section-architecture').classList.contains('active')) {
+      renderArchitecture();
+    }
+  }, 200);
+});
+
+// Add filter button styles
+const style = document.createElement('style');
+style.textContent = `.filter-btn { padding:8px 16px; border:1px solid var(--border); background:white; border-radius:20px; font-size:0.8rem; cursor:pointer; transition:all 0.2s; } .filter-btn:hover { border-color:var(--sf-blue); } .filter-btn.active { background:var(--sf-blue); color:white; border-color:var(--sf-blue); }`;
+document.head.appendChild(style);
+</script>
+
+</body>
+</html>
