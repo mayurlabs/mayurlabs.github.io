@@ -165,12 +165,12 @@ body {
   width: 100%;
   max-width: 1200px;
   margin: 0 auto;
-  min-height: 950px;
+  min-height: 1300px;
 }
 
 .agent-node {
   position: absolute;
-  width: 140px;
+  width: 120px;
   text-align: center;
   cursor: pointer;
   transition: transform 0.3s, box-shadow 0.3s;
@@ -2062,85 +2062,55 @@ body {
 <script>
 // ─── DATA ───
 const agents = [
-  // Lead
-  { id: 'lead', name: 'Lead\nOrchestrator', emoji: '🎭', color: '#032d60', x: 50, y: 3, desc: 'Central orchestrator. Reads capabilities.md at runtime, dispatches specialists based on triggers, manages 10 chain definitions. CWD-preflight detection. Enforces Jarvis Protocol (Pre-Read + Post-Write) on all specialists. Never sends externally.', caps: ['morning_sweep', 'chain orchestration', 'CWD detection', '10 chain definitions', 'jarvis_protocol_enforcement'] },
-  // Group 1 — Parallel sweep (communication)
-  { id: 'slack', name: 'Slack\nTriage', emoji: '🔍', color: '#0176d3', x: 10, y: 18, desc: 'Scans 15+ internal Slack channels — IMs, MPIMs, private channels, allowlisted public. Identifies threads needing response, priority signals.', caps: ['slack_triage', 'priority detection'] },
-  { id: 'customer', name: 'Customer\nResponse', emoji: '🤝', color: '#2e844a', x: 33, y: 18, desc: 'Monitors customer channels (#help-apexguru, #scale-center-support). Cross-references GTA150 accounts (139 orgs). CSM routing. Drafts to customer-drafts/.', caps: ['customer_response', 'gta150_monitor', 'csm_routing'] },
-  { id: 'gmail', name: 'Gmail\nResponder', emoji: '📧', color: '#9050e9', x: 56, y: 18, desc: 'Classifies unread Gmail. Drafts replies for internal-only email. External customer email blocked by policy.', caps: ['gmail_triage'] },
-  { id: 'workspace', name: 'Workspace\nDigest', emoji: '📋', color: '#0b827c', x: 80, y: 18, desc: 'Scans Google Workspace — Docs, Drive, Calendar, Gemini transcripts. Extracts @mentions, shares, comments, action items. Transcript decode resilience.', caps: ['workspace scan', 'transcript decode', '@mention detection'] },
-  // Group 2 — Parallel sweep (intelligence)
-  { id: 'meeting', name: 'Meeting\nOps', emoji: '📅', color: '#fe9339', x: 15, y: 38, desc: 'Pre-meeting briefs (30 min before), Gemini-to-worklog, action item tracker with V2MOM traceback, followup drafts, calendar collision detection. Skips broadcast events + non-human aliases.', caps: ['pre_meeting_brief', 'gemini_notes_to_worklog', 'meeting_action_item_tracker', 'followup_generator', 'meeting_conflict_resolver'] },
-  { id: 'execution', name: 'Execution\nTracker', emoji: '📊', color: '#ea001e', x: 42, y: 38, desc: 'GUS TD delta scan, aging work item nudges (>5d silent), PR review tracker (git.soma + EMU), epic health dashboard with V2MOM cross-ref, pilot progress, worklog compiler, planned release drift.', caps: ['gus_td_tracker', 'aging_work_item_nudge', 'pr_review_tracker', 'epic_health_dashboard', 'customer_pilot_progress_tracker', 'worklog_compiler', 'planned_release_tracker'] },
-  { id: 'intel', name: 'Customer\nIntel', emoji: '🎯', color: '#0b827c', x: 70, y: 38, desc: 'SLA violation watcher (Argus + UIP, working hours live), signature account health (weekly), escalation playbook runner (Playbook #5), customer meeting context loader (90-day deep bundle).', caps: ['sla_violation_watcher', 'signature_account_health', 'customer_escalation_playbook_runner', 'customer_meeting_context_loader'] },
-  // Aggregator
-  { id: 'brief', name: 'Morning\nBrief', emoji: '📰', color: '#032d60', x: 42, y: 55, desc: 'Aggregator. Consumes all 7 specialist outputs → produces 4 deliverables: markdown brief + Slack canvas + DM notification + HTML dashboard. Monday: extended weekly intel section.', caps: ['morning_brief', '4 output destinations'] },
-  // Dashboard + Feedback
-  { id: 'dashboard', name: 'HTML\nDashboard', emoji: '📈', color: '#3b82f6', x: 70, y: 55, desc: 'Generates zero-server single-file HTML dashboard. 5 tabs: Today, Week, Active Work, Ledger, Signals. Phone + laptop + offline resilient. Chart.js CDN with graceful fallback.', caps: ['living_html_dashboard', '5 tabs', 'offline-capable'] },
-  { id: 'feedback', name: 'Feedback\nLoop', emoji: '🔁', color: '#6366f1', x: 90, y: 38, desc: 'Processes Mayuresh\'s edits to the Agent MV Slack canvas. Diffs against proposed recommendations. Writes per-item outcomes to draft-quality-ledger.md. Surfaces voice/style refinements.', caps: ['canvas_edit_parse', 'ledger_update', 'voice_refinement'] },
-  // On-demand — Artifact PDLC
-  { id: 'artifact', name: 'Artifact\nProducer', emoji: '🏗️', color: '#9050e9', x: 8, y: 62, desc: 'Owns the full PDLC chain (10 steps, 5 evidence gates): /discover, /prd-iterate, /prd-to-prototype, /one-pager, /blog-draft, /release-note, /demo-script, /metrics-dashboard, /prototype-deploy. Innovation360 pattern.', caps: ['discover', 'prd_iterate', 'prd_to_ux_prototype', 'one_pager', 'blog_draft', 'release_note', 'demo_script', 'metrics_dashboard', 'prototype_deploy'] },
-  // On-demand — External Intel
-  { id: 'external', name: 'External\nIntel', emoji: '🌐', color: '#fe9339', x: 30, y: 72, desc: 'Competitive pulse (10 named competitors, daily web scan), product research (6-step deep-dive with bias detection), market intel brief (weekly Monday), customer signals synthesizer (theme-level). Never auto-publishes.', caps: ['competitive_pulse', 'product_research', 'strategy_canvas_html', 'market_intel_brief', 'customer_signals_synthesizer'] },
-  // On-demand — Council (multi-variant)
-  { id: 'council', name: 'Council\nRunner', emoji: '🧠', color: '#032d60', x: 55, y: 72, desc: 'Multi-variant strategic counsel: LLM Council (6 PM advisors, Karpathy methodology), Product Counsel (7 Salesforce narrative voices), Personal Council (5 leadership voices — PRIVATE). 10th-man peer review built into every run. Decision Extractor auto-spawns.', caps: ['council_mode', 'product_counsel', 'personal_council', 'pressure_test', 'decision_extractor', '10th_man_review'] },
-  // On-demand — Legal Counsel (NEW Phase 3)
-  { id: 'legal', name: 'Legal\nCounsel', emoji: '⚖️', color: '#d97706', x: 42, y: 62, desc: 'Legal compliance specialist. 4 modes: Proactive Scan (/legal-check), Reactive Q&A (/legal-solve), Precedent Bypass (/legal-bypass — the power move: map mechanic → search precedent → skip business case entirely), Business Case Builder (/legal-case — LAST RESORT). Also: PLR tracker, consent library curator, legal benchmark, subprocessor monitor. Reads MSA/SPARC/Infrastructure docs.', caps: ['legal_check', 'legal_solve', 'legal_bypass_precedent', 'legal_case_builder', 'plr_tracker', 'consent_library', 'legal_benchmark', 'subprocessor_monitor'] },
-  // On-demand — Innovation Lab (NEW Phase 3)
-  { id: 'innovation', name: 'Innovation\nLab', emoji: '💡', color: '#7c3aed', x: 68, y: 62, desc: 'Novel idea generation from cross-agent pattern mining. 5 capabilities: /innovation-scan (mine patterns from slack-triage, customer-response, execution-tracker, external-intel), /idea-spark (generate novel productivity/product ideas), /self-improve (propose Agent MV architecture improvements), /productize (identify features hiding in PM workflows), /experiment-design (structure low-cost experiments to validate ideas).', caps: ['innovation_scan', 'idea_spark', 'self_improve', 'productize', 'experiment_design'] },
-  // On-demand — V2MOM
-  { id: 'v2mom', name: 'V2MOM\nTraceback', emoji: '🧭', color: '#14b8a6', x: 80, y: 72, desc: 'Read-only matcher: maps action items, PRD lines, customer asks to V2MOM measures (M1-M8). Spawned by meeting-ops (>10 items) and artifact-producer (/discover). Ensures nothing is built without strategy link.', caps: ['v2mom_traceback', 'measure_matching'] },
-  // On-demand — Basecamp
-  { id: 'basecamp', name: 'Basecamp\nV2MOM Reader', emoji: '🔄', color: '#64748b', x: 8, y: 82, desc: 'On-demand Playwright scraper. Invokes browser automation to pull authoritative V2MOM data from Basecamp (auth-gated). Rewrites markdown + JSON cache. Read-only on Basecamp forever.', caps: ['basecamp_v2mom_refresh', 'playwright_scraper'] },
-  // Sub-specialists (spawned by parents)
-  { id: 'account_dash', name: 'Account\nDashboard', emoji: '🏦', color: '#0d9488', x: 30, y: 86, desc: 'Sub-specialist spawned by customer-intel. Generates per-account HTML health dashboard (5 tabs). Zero-server, works offline. CTS figures cite Argus query. Mayuresh-only.', caps: ['per_account_html_health', '5 tabs per account'] },
-  { id: 'strategy_canvas', name: 'Strategy\nCanvas', emoji: '🗺️', color: '#f59e0b', x: 55, y: 86, desc: 'Sub-specialist spawned by external-intel. Per-product strategy-canvas HTML (6 tabs: Overview, Strategy Canvas scatter, Competitors, Market, Signals Feed, White Space Monitor). Aditya pattern.', caps: ['strategy_canvas_html', '6 tabs per product'] },
-  { id: 'slds2', name: 'SLDS2 LWC\nPrototype', emoji: '⚡', color: '#7c3aed', x: 80, y: 86, desc: 'Builds Salesforce-native prototypes using real LWC + SLDS2 styles + 85+ lightning-base-components. 100% design-system compliant. Reviewable by UX without Figma. Copy-paste-proximate to production.', caps: ['slds2_lwc_prototype', '85+ components'] },
-  // Standalone specialist — Newsletter
-  { id: 'newsletter', name: 'Newsletter\nProducer', emoji: '📰', color: '#d946ef', x: 8, y: 72, desc: 'Standalone specialist (NOT under artifact-producer). Owns full quarterly newsletter lifecycle: UIP/Trino data pull → per-product section draft → HTML infographic generation → Playwright PNG export → format selection (Slack canvas / HTML / both) → git deploy → review routing. Standing directives from Sri: customer names prominent, unified cross-product view.', caps: ['newsletter_production', 'trino_data_pull', 'html_infographic_gen', 'playwright_png_export', 'git_deploy', 'review_routing'] },
-  // Self-Strengthening Layer (Background)
-  { id: 'session_end', name: 'Session-End\nHook', emoji: '📸', color: '#0b827c', x: 15, y: 96, desc: 'Event-driven (not scheduled). Fires on every session close. Captures decisions, corrections, and voice patterns to memory/*.jsonl. Auto-write — no approval needed.', caps: ['session_end_capture', 'decisions.jsonl auto-write'] },
-  { id: 'voice_harvest', name: 'Voice\nHarvester', emoji: '🎙️', color: '#0b827c', x: 38, y: 96, desc: 'Daily 18:30 IST. Diffs sent messages against drafts to learn voice patterns. Proposes new voice samples to voice-samples-proposed.md (propose-only, never auto-writes markdown).', caps: ['voice_harvest', 'voice-samples-proposed.md'] },
-  { id: 'ledger_detect', name: 'Passive Ledger\nAuto-Detect', emoji: '📊', color: '#0b827c', x: 61, y: 96, desc: 'Daily background. Diffs drafts vs sends automatically. Populates draft-quality-ledger without manual "ledger:" commands. Feeds L1→L2 promotion data passively.', caps: ['ledger_auto_detect', 'draft-quality-ledger.md'] },
-  { id: 'reasoning_update', name: 'Reasoning\nUpdater', emoji: '🧬', color: '#0b827c', x: 84, y: 96, desc: 'Weekly (Sundays). Analyzes decision patterns across the week. Proposes reasoning refinements (e.g., "defer to GK on architecture 4/4 times"). Propose-only — never auto-modifies reasoning model.', caps: ['reasoning_model_update', 'pattern_detection'] },
+  // Lead — Row 0 (top center)
+  { id: 'lead', name: 'Lead\nOrchestrator', emoji: '🎭', color: '#032d60', x: 50, y: 2, desc: 'Central orchestrator. Reads capabilities.md at runtime, dispatches specialists based on triggers, manages 10 chain definitions. CWD-preflight detection. Enforces Jarvis Protocol (Pre-Read + Post-Write) on all specialists. Never sends externally.', caps: ['morning_sweep', 'chain orchestration', 'CWD detection', '10 chain definitions', 'jarvis_protocol_enforcement'] },
+  // Group 1 — Row 1: Communication (y=14)
+  { id: 'slack', name: 'Slack\nTriage', emoji: '🔍', color: '#0176d3', x: 14, y: 14, desc: 'Scans 15+ internal Slack channels — IMs, MPIMs, private channels, allowlisted public. Identifies threads needing response, priority signals.', caps: ['slack_triage', 'priority detection'] },
+  { id: 'customer', name: 'Customer\nResponse', emoji: '🤝', color: '#2e844a', x: 38, y: 14, desc: 'Monitors customer channels (#help-apexguru, #scale-center-support). Cross-references GTA150 accounts (139 orgs). CSM routing. Drafts to customer-drafts/.', caps: ['customer_response', 'gta150_monitor', 'csm_routing'] },
+  { id: 'gmail', name: 'Gmail\nResponder', emoji: '📧', color: '#9050e9', x: 62, y: 14, desc: 'Classifies unread Gmail. Drafts replies for internal-only email. External customer email blocked by policy.', caps: ['gmail_triage'] },
+  { id: 'workspace', name: 'Workspace\nDigest', emoji: '📋', color: '#0b827c', x: 86, y: 14, desc: 'Scans Google Workspace — Docs, Drive, Calendar, Gemini transcripts. Extracts @mentions, shares, comments, action items. Transcript decode resilience.', caps: ['workspace scan', 'transcript decode', '@mention detection'] },
+  // Group 2 — Row 2: Intelligence (y=28)
+  { id: 'meeting', name: 'Meeting\nOps', emoji: '📅', color: '#fe9339', x: 20, y: 28, desc: 'Pre-meeting briefs (30 min before), Gemini-to-worklog, action item tracker with V2MOM traceback, followup drafts, calendar collision detection. Skips broadcast events + non-human aliases.', caps: ['pre_meeting_brief', 'gemini_notes_to_worklog', 'meeting_action_item_tracker', 'followup_generator', 'meeting_conflict_resolver'] },
+  { id: 'execution', name: 'Execution\nTracker', emoji: '📊', color: '#ea001e', x: 50, y: 28, desc: 'GUS TD delta scan, aging work item nudges (>5d silent), PR review tracker (git.soma + EMU), epic health dashboard with V2MOM cross-ref, pilot progress, worklog compiler, planned release drift.', caps: ['gus_td_tracker', 'aging_work_item_nudge', 'pr_review_tracker', 'epic_health_dashboard', 'customer_pilot_progress_tracker', 'worklog_compiler', 'planned_release_tracker'] },
+  { id: 'intel', name: 'Customer\nIntel', emoji: '🎯', color: '#0b827c', x: 80, y: 28, desc: 'SLA violation watcher (Argus + UIP, working hours live), signature account health (weekly), escalation playbook runner (Playbook #5), customer meeting context loader (90-day deep bundle).', caps: ['sla_violation_watcher', 'signature_account_health', 'customer_escalation_playbook_runner', 'customer_meeting_context_loader'] },
+  // Row 3: Aggregation (y=42)
+  { id: 'brief', name: 'Morning\nBrief', emoji: '📰', color: '#032d60', x: 38, y: 42, desc: 'Aggregator. Consumes all 7 specialist outputs → produces 4 deliverables: markdown brief + Slack canvas + DM notification + HTML dashboard. Monday: extended weekly intel section.', caps: ['morning_brief', '4 output destinations'] },
+  { id: 'dashboard', name: 'HTML\nDashboard', emoji: '📈', color: '#3b82f6', x: 62, y: 42, desc: 'Generates zero-server single-file HTML dashboard. 5 tabs: Today, Week, Active Work, Ledger, Signals. Phone + laptop + offline resilient. Chart.js CDN with graceful fallback.', caps: ['living_html_dashboard', '5 tabs', 'offline-capable'] },
+  { id: 'feedback', name: 'Feedback\nLoop', emoji: '🔁', color: '#6366f1', x: 86, y: 42, desc: 'Processes Mayuresh\'s edits to the Agent MV Slack canvas. Diffs against proposed recommendations. Writes per-item outcomes to draft-quality-ledger.md. Surfaces voice/style refinements.', caps: ['canvas_edit_parse', 'ledger_update', 'voice_refinement'] },
+  // Row 4: On-demand specialists — Strategic (y=56)
+  { id: 'council', name: 'Council\nRunner', emoji: '🧠', color: '#032d60', x: 14, y: 56, desc: 'Multi-variant strategic counsel: LLM Council (6 PM advisors, Karpathy methodology), Product Counsel (7 Salesforce narrative voices), Personal Council (5 leadership voices — PRIVATE). 10th-man peer review built into every run. Decision Extractor auto-spawns.', caps: ['council_mode', 'product_counsel', 'personal_council', 'pressure_test', 'decision_extractor', '10th_man_review'] },
+  { id: 'innovation', name: 'Innovation\nLab', emoji: '💡', color: '#7c3aed', x: 38, y: 56, desc: 'Novel idea generation from cross-agent pattern mining. 5 capabilities powered by Workflow scripts: /innovation-scan, /idea-spark, /self-improve, /productize, /experiment-design.', caps: ['innovation_scan', 'idea_spark', 'self_improve', 'productize', 'experiment_design'] },
+  { id: 'legal', name: 'Legal\nCounsel', emoji: '⚖️', color: '#d97706', x: 62, y: 56, desc: 'Legal compliance specialist. 4 modes: Proactive Scan (/legal-check), Reactive Q&A (/legal-solve), Precedent Bypass (/legal-bypass), Business Case Builder (/legal-case). Also: PLR tracker, consent library, subprocessor monitor.', caps: ['legal_check', 'legal_solve', 'legal_bypass_precedent', 'legal_case_builder', 'plr_tracker', 'consent_library', 'legal_benchmark', 'subprocessor_monitor'] },
+  { id: 'external', name: 'External\nIntel', emoji: '🌐', color: '#fe9339', x: 86, y: 56, desc: 'Competitive pulse (10 named competitors), product research (6-step deep-dive), market intel brief (weekly Monday), customer signals synthesizer. Never auto-publishes.', caps: ['competitive_pulse', 'product_research', 'strategy_canvas_html', 'market_intel_brief', 'customer_signals_synthesizer'] },
+  // Row 5: On-demand — Artifact & Execution (y=70)
+  { id: 'artifact', name: 'Artifact\nProducer', emoji: '🏗️', color: '#9050e9', x: 14, y: 70, desc: 'Owns the full PDLC chain (10 steps, 5 evidence gates): /discover, /prd-iterate, /prd-to-prototype, /one-pager, /blog-draft, /release-note, /demo-script, /metrics-dashboard, /prototype-deploy.', caps: ['discover', 'prd_iterate', 'prd_to_ux_prototype', 'one_pager', 'blog_draft', 'release_note', 'demo_script', 'metrics_dashboard', 'prototype_deploy'] },
+  { id: 'newsletter', name: 'Newsletter\nProducer', emoji: '📰', color: '#d946ef', x: 38, y: 70, desc: 'Standalone: quarterly newsletter lifecycle. Trino data → draft → HTML infographic → Playwright PNG → format selection → git deploy → review routing.', caps: ['newsletter_production', 'trino_data_pull', 'html_infographic_gen', 'playwright_png_export', 'git_deploy', 'review_routing'] },
+  { id: 'v2mom', name: 'V2MOM\nTraceback', emoji: '🧭', color: '#14b8a6', x: 62, y: 70, desc: 'Read-only matcher: maps action items, PRD lines, customer asks to V2MOM measures (M1-M8). Spawned by meeting-ops and artifact-producer.', caps: ['v2mom_traceback', 'measure_matching'] },
+  { id: 'basecamp', name: 'Basecamp\nReader', emoji: '🔄', color: '#64748b', x: 86, y: 70, desc: 'On-demand Playwright scraper. Pulls authoritative V2MOM from Basecamp (auth-gated). Rewrites markdown + JSON cache.', caps: ['basecamp_v2mom_refresh', 'playwright_scraper'] },
+  // Row 6: Sub-specialists (y=83)
+  { id: 'account_dash', name: 'Account\nDashboard', emoji: '🏦', color: '#0d9488', x: 20, y: 83, desc: 'Sub-specialist spawned by customer-intel. Per-account HTML health dashboard (5 tabs). Zero-server, offline.', caps: ['per_account_html_health', '5 tabs per account'] },
+  { id: 'strategy_canvas', name: 'Strategy\nCanvas', emoji: '🗺️', color: '#f59e0b', x: 44, y: 83, desc: 'Sub-specialist spawned by external-intel. Per-product strategy-canvas HTML (6 tabs).', caps: ['strategy_canvas_html', '6 tabs per product'] },
+  { id: 'slds2', name: 'SLDS2 LWC\nPrototype', emoji: '⚡', color: '#7c3aed', x: 68, y: 83, desc: 'Builds Salesforce-native prototypes using real LWC + SLDS2 styles + 85+ components.', caps: ['slds2_lwc_prototype', '85+ components'] },
+  // Row 7: Self-Strengthening Layer (y=94)
+  { id: 'session_end', name: 'Session-End\nHook', emoji: '📸', color: '#0b827c', x: 14, y: 94, desc: 'Event-driven. Fires on every session close. Captures decisions, corrections, voice patterns to memory/*.jsonl.', caps: ['session_end_capture', 'decisions.jsonl auto-write'] },
+  { id: 'voice_harvest', name: 'Voice\nHarvester', emoji: '🎙️', color: '#0b827c', x: 38, y: 94, desc: 'Daily 18:30 IST. Diffs sent messages against drafts to learn voice patterns.', caps: ['voice_harvest', 'voice-samples-proposed.md'] },
+  { id: 'ledger_detect', name: 'Passive Ledger\nAuto-Detect', emoji: '📊', color: '#0b827c', x: 62, y: 94, desc: 'Daily background. Diffs drafts vs sends. Populates draft-quality-ledger passively.', caps: ['ledger_auto_detect', 'draft-quality-ledger.md'] },
+  { id: 'reasoning_update', name: 'Reasoning\nUpdater', emoji: '🧬', color: '#0b827c', x: 86, y: 94, desc: 'Weekly (Sundays). Analyzes decision patterns. Proposes reasoning refinements.', caps: ['reasoning_model_update', 'pattern_detection'] },
 ];
 
 const connections = [
-  // Lead → Group 1 (parallel)
+  // Lead → Group 1 (sweep dispatch)
   { from: 'lead', to: 'slack' }, { from: 'lead', to: 'customer' }, { from: 'lead', to: 'gmail' }, { from: 'lead', to: 'workspace' },
-  // Lead → Group 2 (parallel, depends on workspace-digest)
+  // Lead → Group 2 (after Group 1)
   { from: 'lead', to: 'meeting' }, { from: 'lead', to: 'execution' }, { from: 'lead', to: 'intel' },
-  // Workspace feeds meeting-ops (calendar data)
-  { from: 'workspace', to: 'meeting' },
-  // Meeting-ops cross-spawns customer-intel for customer meetings
-  { from: 'meeting', to: 'intel' },
-  // All Group 1+2 feed into Morning Brief
-  { from: 'slack', to: 'brief' }, { from: 'customer', to: 'brief' }, { from: 'gmail', to: 'brief' },
-  { from: 'workspace', to: 'brief' }, { from: 'meeting', to: 'brief' }, { from: 'execution', to: 'brief' }, { from: 'intel', to: 'brief' },
+  // Group 1+2 → Morning Brief (simplified: only show edges from row boundaries)
+  { from: 'meeting', to: 'brief' }, { from: 'execution', to: 'brief' }, { from: 'intel', to: 'brief' },
   // Morning Brief → Dashboard
   { from: 'brief', to: 'dashboard' },
-  // Lead → On-demand specialists
-  { from: 'lead', to: 'artifact' }, { from: 'lead', to: 'external' }, { from: 'lead', to: 'council' },
-  { from: 'lead', to: 'v2mom' }, { from: 'lead', to: 'basecamp' }, { from: 'lead', to: 'feedback' },
-  { from: 'lead', to: 'legal' }, { from: 'lead', to: 'innovation' },
-  // Legal reads from customer-response + execution-tracker
-  { from: 'customer', to: 'legal' }, { from: 'execution', to: 'legal' },
-  // Innovation reads from 4 sibling specialists
-  { from: 'slack', to: 'innovation' }, { from: 'customer', to: 'innovation' }, { from: 'execution', to: 'innovation' }, { from: 'external', to: 'innovation' },
-  // Standalone specialist
-  { from: 'lead', to: 'newsletter' },
-  // Sub-specialist spawning
+  // Sub-specialist spawning (clean vertical lines)
   { from: 'intel', to: 'account_dash' },
   { from: 'external', to: 'strategy_canvas' },
   { from: 'artifact', to: 'slds2' },
-  // V2MOM traceback serves multiple parents
-  { from: 'meeting', to: 'v2mom' }, { from: 'artifact', to: 'v2mom' },
-  // Council auto-spawns decision extractor (internal)
-  { from: 'council', to: 'v2mom' },
-  // Self-Strengthening Layer (background, independent of sweep)
-  { from: 'feedback', to: 'voice_harvest' },
-  { from: 'feedback', to: 'ledger_detect' },
-  { from: 'session_end', to: 'reasoning_update' },
 ];
 
 const capabilities = [
@@ -2245,7 +2215,7 @@ function renderArchitecture() {
   agents.forEach(agent => {
     const node = document.createElement('div');
     node.className = 'agent-node';
-    node.style.left = (agent.x / 100 * w - 70) + 'px';
+    node.style.left = (agent.x / 100 * w - 60) + 'px';
     node.style.top = (agent.y / 100 * h) + 'px';
     node.innerHTML = `
       <div class="agent-icon" style="background:${agent.color}20; border-color:${agent.color};">
