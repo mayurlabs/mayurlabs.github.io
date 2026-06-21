@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scale Products — DET & Professional Services Success Story</title>
+    <style>
+        :root {
+            --sf-blue: #0176D3;
+            --sf-blue-dark: #014486;
+            --sf-navy: #032D60;
+            --sf-green: #2E844A;
+            --sf-orange: #DD7A01;
+            --sf-gray-100: #F3F3F3;
+            --sf-gray-200: #E5E5E5;
+            --sf-gray-600: #706E6B;
+            --shadow-sm: 0 1px 3px rgba(0,0,0,0.08);
+            --shadow-md: 0 4px 12px rgba(0,0,0,0.1);
+            --radius: 12px;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Salesforce Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #f8fafc 0%, #eef2f7 100%);
+            color: #1B1C1D;
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+        .header {
+            background: linear-gradient(135deg, var(--sf-navy) 0%, var(--sf-blue-dark) 100%);
+            color: white; padding: 2.5rem 2rem; text-align: center; position: relative; overflow: hidden;
+        }
+        .header::before { content: ''; position: absolute; top: -50%; right: -20%; width: 60%; height: 200%; background: radial-gradient(ellipse, rgba(255,255,255,0.05) 0%, transparent 70%); }
+        .header h1 { font-size: 1.8rem; font-weight: 700; margin-bottom: 0.5rem; position: relative; }
+        .header .subtitle { font-size: 0.95rem; opacity: 0.85; position: relative; }
+        .header .meta { margin-top: 1rem; font-size: 0.8rem; opacity: 0.7; position: relative; }
+        .container { max-width: 1100px; margin: 0 auto; padding: 2rem 1.5rem; }
+
+        /* Metric Cards */
+        .exec-summary { background: white; border-radius: var(--radius); box-shadow: var(--shadow-md); padding: 2rem; margin-bottom: 2rem; border-left: 5px solid var(--sf-blue); }
+        .exec-summary h2 { color: var(--sf-navy); font-size: 1.3rem; margin-bottom: 1rem; }
+        .exec-summary .intro { color: var(--sf-gray-600); margin-bottom: 1.25rem; font-size: 0.95rem; }
+        .metric-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem; }
+        .metric-card { background: var(--sf-gray-100); border-radius: 8px; padding: 1rem; text-align: center; }
+        .metric-card .number { font-size: 1.5rem; font-weight: 700; color: var(--sf-blue); }
+        .metric-card .label { font-size: 0.7rem; color: var(--sf-gray-600); margin-top: 0.25rem; text-transform: uppercase; letter-spacing: 0.5px; }
+
+        /* Toggle */
+        .toggle-container { display: flex; gap: 0; margin-bottom: 2rem; background: var(--sf-gray-200); border-radius: 8px; padding: 4px; position: sticky; top: 1rem; z-index: 100; box-shadow: var(--shadow-sm); }
+        .toggle-btn { flex: 1; padding: 0.75rem 1rem; border: none; background: transparent; font-size: 0.85rem; font-weight: 600; color: var(--sf-gray-600); cursor: pointer; border-radius: 6px; transition: all 0.3s ease; }
+        .toggle-btn.active { background: white; color: var(--sf-navy); box-shadow: var(--shadow-sm); }
+        .toggle-btn .badge { display: inline-block; background: var(--sf-blue); color: white; font-size: 0.6rem; padding: 2px 6px; border-radius: 10px; margin-left: 4px; vertical-align: middle; }
+
+        /* Sections */
+        .story-section { display: none; animation: fadeIn 0.4s ease; }
+        .story-section.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+        .card { background: white; border-radius: var(--radius); box-shadow: var(--shadow-sm); padding: 1.75rem; margin-bottom: 1.5rem; }
+        .card h3 { color: var(--sf-navy); font-size: 1.1rem; margin-bottom: 1rem; padding-bottom: 0.5rem; border-bottom: 2px solid var(--sf-gray-100); }
+        .card h4 { color: var(--sf-blue-dark); font-size: 0.95rem; margin: 1rem 0 0.5rem; }
+        .card ul { list-style: none; padding: 0; }
+        .card ul li { padding: 0.4rem 0 0.4rem 1.5rem; position: relative; font-size: 0.9rem; }
+        .card ul li::before { content: ''; position: absolute; left: 0; top: 0.75rem; width: 8px; height: 8px; border-radius: 50%; background: var(--sf-blue); opacity: 0.5; }
+        .card ol { padding-left: 1.5rem; }
+        .card ol li { padding: 0.3rem 0; font-size: 0.9rem; }
+
+        .results-table { width: 100%; border-collapse: collapse; margin: 1rem 0; font-size: 0.85rem; }
+        .results-table th { background: var(--sf-navy); color: white; padding: 0.6rem 1rem; text-align: left; font-weight: 600; }
+        .results-table td { padding: 0.5rem 1rem; border-bottom: 1px solid var(--sf-gray-200); }
+        .results-table tr:nth-child(even) td { background: var(--sf-gray-100); }
+        .results-table .highlight-row td { background: #E1F5FE; font-weight: 700; color: var(--sf-navy); }
+
+        .quote-block { background: linear-gradient(135deg, #f0f7ff 0%, #e8f4fd 100%); border-left: 4px solid var(--sf-blue); padding: 1rem 1.25rem; margin: 1rem 0; border-radius: 0 8px 8px 0; font-style: italic; color: var(--sf-navy); font-size: 0.9rem; }
+        .quote-block .attribution { font-style: normal; font-size: 0.75rem; color: var(--sf-gray-600); margin-top: 0.4rem; }
+
+        .timeline { position: relative; padding-left: 2rem; }
+        .timeline::before { content: ''; position: absolute; left: 8px; top: 0; bottom: 0; width: 2px; background: var(--sf-gray-200); }
+        .timeline-item { position: relative; padding: 0.5rem 0; font-size: 0.85rem; }
+        .timeline-item::before { content: ''; position: absolute; left: -1.65rem; top: 0.85rem; width: 10px; height: 10px; border-radius: 50%; background: var(--sf-blue); border: 2px solid white; box-shadow: 0 0 0 2px var(--sf-blue); }
+        .timeline-item .date { font-weight: 700; color: var(--sf-blue-dark); }
+
+        .insight-box { background: linear-gradient(135deg, #FFF8E1 0%, #FFF3CD 100%); border: 1px solid #FFE082; border-radius: 8px; padding: 1rem 1.25rem; margin: 1rem 0; font-size: 0.85rem; }
+        .insight-box .label { font-weight: 700; color: var(--sf-orange); text-transform: uppercase; font-size: 0.7rem; letter-spacing: 0.5px; margin-bottom: 0.3rem; }
+        .opportunity-box { background: linear-gradient(135deg, #E8F5E9 0%, #C8E6C9 100%); border: 1px solid #A5D6A7; border-radius: 8px; padding: 1rem 1.25rem; margin: 1rem 0; font-size: 0.85rem; }
+        .opportunity-box .label { font-weight: 700; color: var(--sf-green); text-transform: uppercase; font-size: 0.7rem; letter-spacing: 0.5px; margin-bottom: 0.3rem; }
+        .ravi-callout { background: #FFF3E0; border: 2px dashed var(--sf-orange); border-radius: 8px; padding: 1rem 1.25rem; margin: 1.5rem 0; font-size: 0.85rem; }
+        .ravi-callout strong { color: var(--sf-orange); }
+
+        .story-card { background: white; border-radius: var(--radius); box-shadow: var(--shadow-md); padding: 1.75rem; margin-bottom: 1.5rem; border-left: 5px solid var(--sf-green); }
+        .story-card h3 { color: var(--sf-green); font-size: 1.05rem; margin-bottom: 0.75rem; border: none; padding: 0; }
+        .story-card .meta-row { display: flex; flex-wrap: wrap; gap: 0.75rem; margin-bottom: 1rem; font-size: 0.75rem; color: var(--sf-gray-600); }
+        .story-card .meta-row span { background: var(--sf-gray-100); padding: 0.2rem 0.6rem; border-radius: 4px; }
+
+        .org-pills { display: flex; flex-wrap: wrap; gap: 0.4rem; margin: 0.75rem 0; }
+        .org-pill { background: var(--sf-gray-100); border: 1px solid var(--sf-gray-200); border-radius: 20px; padding: 0.25rem 0.7rem; font-size: 0.72rem; color: var(--sf-navy); white-space: nowrap; }
+
+        /* Exec View */
+        .exec-table { width: 100%; border-collapse: collapse; margin: 1rem 0; font-size: 0.9rem; }
+        .exec-table th { background: var(--sf-navy); color: white; padding: 0.75rem 1rem; text-align: left; }
+        .exec-table td { padding: 0.65rem 1rem; border-bottom: 1px solid var(--sf-gray-200); }
+        .exec-table tr:nth-child(even) td { background: var(--sf-gray-100); }
+        .exec-table .num { font-weight: 700; color: var(--sf-blue); font-size: 1rem; }
+
+        .why-matters ol { list-style: none; counter-reset: item; padding: 0; }
+        .why-matters ol li { counter-increment: item; padding: 0.6rem 0 0.6rem 2.5rem; position: relative; font-size: 0.9rem; border-bottom: 1px solid var(--sf-gray-100); }
+        .why-matters ol li:last-child { border-bottom: none; }
+        .why-matters ol li::before { content: counter(item); position: absolute; left: 0; top: 0.5rem; width: 24px; height: 24px; background: var(--sf-blue); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 700; }
+        .why-matters ol li strong { color: var(--sf-navy); }
+
+        @media (max-width: 768px) { .metric-grid { grid-template-columns: repeat(2, 1fr); } }
+        .footer { text-align: center; padding: 2rem; color: var(--sf-gray-600); font-size: 0.75rem; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Scale Products — DET & ProServ Success Story</h1>
+        <div class="subtitle">Internal Partnerships Driving Real Impact</div>
+        <div class="meta">Prepared for Sriram Dinavahi | By Mayuresh Verma & Ravi Raina | June 2026</div>
+    </div>
+
+    <div class="container">
+        <!-- Exec Summary (always visible) -->
+        <div class="exec-summary">
+            <h2>At a Glance</h2>
+            <p class="intro">Two partnerships — <strong>DET (Org62)</strong> and <strong>Professional Services</strong> — have driven measurable Scale Products impact since FY26. Neither was surfaced to leadership until now.</p>
+            <div class="metric-grid">
+                <div class="metric-card"><div class="number">88</div><div class="label">Recs Implemented<br>(Org62)</div></div>
+                <div class="metric-card"><div class="number">$694/mo</div><div class="label">CTS Savings<br>(compounding)</div></div>
+                <div class="metric-card"><div class="number">424 hrs</div><div class="label">Runtime<br>Improvement</div></div>
+                <div class="metric-card"><div class="number">1,493</div><div class="label">PS Project<br>Orgs</div></div>
+                <div class="metric-card"><div class="number">143+</div><div class="label">Total Issues<br>Fixed</div></div>
+                <div class="metric-card"><div class="number">36%</div><div class="label">PS Enablement<br>(2x base)</div></div>
+            </div>
+        </div>
+
+        <!-- Toggle: 3 tabs -->
+        <div class="toggle-container">
+            <button class="toggle-btn" onclick="showSection('exec')">Exec View <span class="badge">1-pager</span></button>
+            <button class="toggle-btn active" onclick="showSection('det')">DET <span class="badge">Org62</span></button>
+            <button class="toggle-btn" onclick="showSection('ps')">ProServ <span class="badge">GDC</span></button>
+        </div>
+
+        <!-- ===== EXEC VIEW ===== -->
+        <div class="story-section" id="section-exec">
+            <div class="card">
+                <h3>DET (Org62 — Customer Zero)</h3>
+                <table class="exec-table">
+                    <tr><td style="width:50%;">Recs implemented (Feb–May '26)</td><td class="num">88</td></tr>
+                    <tr><td>Runtime saved (Q4 FY26)</td><td class="num">424 hours</td></tr>
+                    <tr><td>CTS savings</td><td class="num">$694/month</td></tr>
+                    <tr><td>Apex chars removed</td><td class="num">112K</td></tr>
+                    <tr><td>Public endorsement</td><td>#eng-excellence (DET team, May 27)</td></tr>
+                </table>
+                <div class="quote-block">
+                    "These savings aren't a one-time win; they continue to accrue each time the improved code runs."
+                    <div class="attribution">— DET Engineering team</div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>Professional Services</h3>
+                <table class="exec-table">
+                    <tr><td style="width:50%;">PS project orgs touched</td><td class="num">1,493</td></tr>
+                    <tr><td>ApexGuru enabled (PS orgs)</td><td class="num">36% (2x base rate)</td></tr>
+                    <tr><td>GDC consultants enabled</td><td class="num">234+</td></tr>
+                    <tr><td>DaVita: issues fixed (4-week sprint)</td><td class="num">55</td></tr>
+                    <tr><td>DaVita: tech debt resolved</td><td class="num">20.5 story points</td></tr>
+                    <tr><td>Keyloop: query patterns found</td><td class="num">10+</td></tr>
+                </table>
+                <div class="quote-block">
+                    "Even non-developers can quickly see what's critical. It has led to reduced manual effort, improved code accuracy, and faster delivery."
+                    <div class="attribution">— DaVita customer feedback</div>
+                </div>
+            </div>
+
+            <div class="card why-matters">
+                <h3>Why This Matters</h3>
+                <ol>
+                    <li><strong>Product validation:</strong> Org62 (highest bar) shows compounding value. DaVita made it standard practice.</li>
+                    <li><strong>Scales without effort:</strong> PS embeds into 1,500+ projects at zero incremental PM/eng cost.</li>
+                    <li><strong>Revenue signal:</strong> $694/mo from one org. Multiply across GTA150.</li>
+                    <li><strong>Customer-quotable:</strong> 3 stories with direct quotes — ready for external use.</li>
+                    <li><strong>Adoption driver:</strong> 54 warm-intro PS orgs available now. 2x enablement rate proven.</li>
+                </ol>
+            </div>
+
+            <div class="ravi-callout">
+                <strong>[Ravi to add]:</strong> Scale Center metrics, SC adoption in PS projects, SC-specific DET impact
+            </div>
+        </div>
+
+        <!-- ===== DET SECTION ===== -->
+        <div class="story-section active" id="section-det">
+            <div class="card">
+                <h3>Background</h3>
+                <ul>
+                    <li><strong>Org62</strong> — 12M+ lines of Apex, 60K+ daily users, millions of daily transactions</li>
+                    <li><strong>DET team</strong> (IT Engineering & Operations) — partnered with Scale Products Q4 FY26</li>
+                    <li>Sprint-over-sprint execution: reviewed recs, filed dependencies with metadata-owning teams, drove cleanup</li>
+                </ul>
+            </div>
+
+            <div class="card">
+                <h3>Engagement Model</h3>
+                <ol>
+                    <li>Reviewed ApexGuru/Scale Center recommendations every sprint</li>
+                    <li>Filed GUS dependencies with metadata-owning teams</li>
+                    <li>Tracked via Operation Lighthouse cleanup</li>
+                    <li>April: 10 targeted fixes on high-traffic entry points → <strong>714M ms</strong> (more than Feb's 20 fixes combined)</li>
+                </ol>
+            </div>
+
+            <div class="card">
+                <h3>Results (Feb–May 2026)</h3>
+                <table class="results-table">
+                    <thead><tr><th>Metric</th><th>Q4 FY26</th><th>May '26</th><th>Total</th></tr></thead>
+                    <tbody>
+                        <tr><td>Recs implemented</td><td>68</td><td>20</td><td><strong>88</strong></td></tr>
+                        <tr><td>Unused methods removed</td><td>48</td><td>18</td><td><strong>66</strong></td></tr>
+                        <tr><td>Apex chars removed</td><td>73K</td><td>40K</td><td><strong>112K</strong></td></tr>
+                        <tr class="highlight-row"><td>CTS savings</td><td colspan="3">$694/month (compounding)</td></tr>
+                        <tr class="highlight-row"><td>Total runtime improvement</td><td colspan="3">~1,528M ms (~424 hours)</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="card">
+                <h3>Public Endorsement (#eng-excellence, May 27)</h3>
+                <div class="quote-block">
+                    "At Salesforce's scale, where Org62 code runs continuously across millions of transactions, these savings aren't a one-time win; they continue to accrue each time the improved code runs. I'd encourage all scrum teams to periodically check Scale Center for insights."
+                    <div class="attribution">— DET Engineering team, #eng-excellence post</div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>What's Next</h3>
+                <ul>
+                    <li><strong>Platform Guardian</strong> — auto-surface recs to code-owning teams via Metadata Catalog</li>
+                    <li><strong>Code Analyzer</strong> (Jul '26) — CLI/IDE channel for DET developers</li>
+                    <li><strong>API access</strong> — CI/CD integration for DET pipeline</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- ===== PROSERV SECTION ===== -->
+        <div class="story-section" id="section-ps">
+            <div class="card">
+                <h3>Background</h3>
+                <ul>
+                    <li><strong>PS Global Delivery Center (GDC)</strong> — Scale Products' "Customer Zero" for ProServ channel</li>
+                    <li><strong>PS Leadership</strong> — V2MOM "Digital Labor" metric alignment with Scale Products adoption</li>
+                    <li><strong>GDC + Field Enablement teams</strong> — regional delivery across AMER, EMEA, JAPAC</li>
+                    <li>Active partnership since <strong>June 2025</strong></li>
+                </ul>
+            </div>
+
+            <div class="card">
+                <h3>Timeline</h3>
+                <div class="timeline">
+                    <div class="timeline-item"><span class="date">Jun 2025</span> — 3 GDC enablement sessions (234+ attendees)</div>
+                    <div class="timeline-item"><span class="date">Sep 2025</span> — DaVita 4-week remediation sprint with GDC</div>
+                    <div class="timeline-item"><span class="date">Oct 2025</span> — 1,493 orgs tracked: 398 AG (19%), 452 SC (30%)</div>
+                    <div class="timeline-item"><span class="date">Mar 2026</span> — DX MCP GA + Test Case Insights pilot with PS</div>
+                    <div class="timeline-item"><span class="date">May 2026</span> — Keyloop success story (EMEA)</div>
+                    <div class="timeline-item"><span class="date">Jun 2026</span> — V2MOM "Digital Labor" alignment</div>
+                </div>
+            </div>
+
+            <!-- DaVita -->
+            <div class="story-card">
+                <h3>DaVita — ApexGuru Remediation with GDC</h3>
+                <div class="meta-row">
+                    <span>Healthcare</span><span>Denver, USA</span><span>300 → 3,000 clinics</span><span>GDC-led engagement</span>
+                </div>
+                <div class="quote-block">
+                    "The ApexGuru reports are crisp and easy to read. Even non-developers can quickly see what's critical and help prioritize. It has led to reduced manual effort, improved code accuracy, and faster delivery through focused testing and fixes."
+                    <div class="attribution">— DaVita customer feedback</div>
+                </div>
+                <table class="results-table">
+                    <thead><tr><th>Outcome</th><th>Value</th></tr></thead>
+                    <tbody>
+                        <tr class="highlight-row"><td>Issues fixed (4-week sprint)</td><td>55</td></tr>
+                        <tr class="highlight-row"><td>Tech debt resolved</td><td>20.5 Story Points</td></tr>
+                        <tr><td>Focus</td><td>22 Critical + 13 Major issues</td></tr>
+                        <tr><td>Client ask</td><td>Make ApexGuru <strong>standard practice</strong></td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Keyloop -->
+            <div class="story-card">
+                <h3>Keyloop — CPQ & CALM Performance (EMEA)</h3>
+                <div class="meta-row">
+                    <span>Automotive Tech</span><span>UK</span><span>EMEA PS Motion</span>
+                </div>
+                <div class="quote-block">
+                    "ApexGuru's AI-powered analysis identified critical performance bottlenecks and unbulkified methods in a complex Salesforce org with hundreds of custom classes."
+                    <div class="attribution">— Keyloop customer feedback</div>
+                </div>
+                <ul>
+                    <li><strong>10+ instances</strong> of inefficient query patterns in loops</li>
+                    <li>Pinpointed redundant SOQL & DML in invocable methods</li>
+                    <li>Result: CPQ/CALM performance optimized, heap issues resolved</li>
+                </ul>
+            </div>
+
+            <div class="card">
+                <h3>Live PS Project Adoption (Jun 21, 2026)</h3>
+                <p style="font-size:0.78rem; color:var(--sf-gray-600); margin-bottom:0.75rem;">Source: Org62 pse__Proj__c (active, start >= Jan 2026) x Trino org_info</p>
+                <table class="results-table">
+                    <thead><tr><th>Metric</th><th>Value</th></tr></thead>
+                    <tbody>
+                        <tr><td>Active PS projects</td><td>85 unique orgs</td></tr>
+                        <tr class="highlight-row"><td>ApexGuru Enabled</td><td>31 orgs (36%)</td></tr>
+                        <tr><td>Not enabled (opportunity)</td><td>54 orgs</td></tr>
+                    </tbody>
+                </table>
+                <div class="insight-box">
+                    <div class="label">Key Insight</div>
+                    36% enablement = 2x the general population rate. PS is a proven activation channel.
+                </div>
+                <div class="opportunity-box">
+                    <div class="label">Opportunity</div>
+                    54 orgs in active PS projects — warm intro, consultant relationship already exists.
+                </div>
+                <h4>Notable Enabled</h4>
+                <div class="org-pills">
+                    <span class="org-pill">Lowe's</span><span class="org-pill">Toyota Motor Credit</span><span class="org-pill">US Bank</span><span class="org-pill">J&J</span><span class="org-pill">Commonwealth Bank</span><span class="org-pill">GM Financial</span><span class="org-pill">Live Nation</span><span class="org-pill">lululemon</span><span class="org-pill">DaVita</span><span class="org-pill">Principal Life</span><span class="org-pill">UCLA Health</span><span class="org-pill">Sirius XM</span><span class="org-pill">PANDORA</span><span class="org-pill">Bouygues Telecom</span>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>What's Next</h3>
+                <ul>
+                    <li><strong>Target 54 non-enabled PS orgs</strong> for activation push via GDC</li>
+                    <li><strong>Code Analyzer GA</strong> (Jul '26) — consultants get CLI/IDE access</li>
+                    <li><strong>V2MOM "Digital Labor"</strong> — quarterly reporting to PS leadership</li>
+                    <li><strong>GDC refresh sessions</strong> planned H2 FY27</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- ===== COMBINED + WHY (always visible) ===== -->
+        <div class="card" style="margin-top:1.5rem; border-top: 3px solid var(--sf-navy);">
+            <h3>Combined Impact</h3>
+            <table class="results-table">
+                <thead><tr><th>Dimension</th><th style="background:#1565C0;">DET</th><th style="background:#2E7D32;">ProServ</th><th>Combined</th></tr></thead>
+                <tbody>
+                    <tr><td><strong>Duration</strong></td><td>4 months</td><td>12+ months</td><td><strong>12+ months</strong></td></tr>
+                    <tr><td><strong>Stories</strong></td><td>Org62</td><td>DaVita, Keyloop</td><td><strong>3</strong></td></tr>
+                    <tr><td><strong>Issues fixed</strong></td><td>88</td><td>55+</td><td><strong>143+</strong></td></tr>
+                    <tr><td><strong>Orgs</strong></td><td>1</td><td>1,493</td><td><strong>1,494</strong></td></tr>
+                    <tr><td><strong>CTS</strong></td><td>$694/mo</td><td>TBD</td><td><strong>$694+/mo</strong></td></tr>
+                    <tr><td><strong>Runtime</strong></td><td>424 hrs</td><td>TBD</td><td><strong>424+ hrs</strong></td></tr>
+                    <tr><td><strong>People enabled</strong></td><td>DET team</td><td>234+ GDC consultants</td><td><strong>Broad reach</strong></td></tr>
+                </tbody>
+            </table>
+            <div class="ravi-callout">
+                <strong>[Ravi to add]:</strong> Scale Center metrics, SC adoption in PS projects, SC-specific DET impact
+            </div>
+        </div>
+
+        <div class="card why-matters" style="border-top: 3px solid var(--sf-green);">
+            <h3>Why This Matters to Sri</h3>
+            <ol>
+                <li><strong>Product validation:</strong> Org62 shows compounding value. DaVita made it standard practice.</li>
+                <li><strong>Scales without effort:</strong> PS embeds into 1,500+ projects at zero incremental cost.</li>
+                <li><strong>Revenue signal:</strong> $694/mo from one org. Multiply across GTA150.</li>
+                <li><strong>Customer-quotable:</strong> 3 stories with direct quotes — ready for external use.</li>
+                <li><strong>Adoption driver:</strong> 54 warm-intro PS orgs. 2x enablement rate proven.</li>
+            </ol>
+        </div>
+    </div>
+
+    <div class="footer">
+        Scale Products — DET & Professional Services Success Story | Confidential — Internal Use Only | June 2026
+    </div>
+
+    <script>
+        function showSection(section) {
+            document.querySelectorAll('.story-section').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.toggle-btn').forEach(btn => btn.classList.remove('active'));
+            document.getElementById('section-' + section).classList.add('active');
+            event.currentTarget.classList.add('active');
+        }
+    </script>
+</body>
+</html>
